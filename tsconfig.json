@@ -15,7 +15,8 @@
       "@exceptions": ["exceptions/index"],
       "@middleware": ["middleware/index"],
       "@interfaces": ["interfaces/index"],
-      "@users": ["users/index"]
+      "@users": ["users/index"],
+      "@apartments": ["apartments/index"]
     }
   },
   "include": [

@@ -9,12 +9,14 @@ import routes from './routes';
 import { ormConfig } from '@configs';
 import { winston } from '@utils';
 import { errorMiddleware, notFoundMiddleware } from '@middleware';
+import jsend from 'jsend';
 
 const app = express();
 app.use(morgan('combined', {stream: winston.mStream}));
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({extended: false}));
+app.use(jsend.middleware);
 
 app.use('/api/v1', routes);
 

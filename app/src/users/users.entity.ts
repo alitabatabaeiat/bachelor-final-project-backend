@@ -1,20 +1,24 @@
-import { Column, Entity, OneToMany } from "typeorm";
-import { BaseEntity } from "@utils";
+import {Column, Entity, OneToMany} from "typeorm";
+import {BaseEntity} from "@utils";
 import bcrypt from "bcryptjs";
+import {Apartment} from "../apartments";
 
 @Entity('users')
 class User extends BaseEntity {
-    @Column({ name: 'first_name', length: 20, nullable: true })
+    @Column({name: 'first_name', length: 20, nullable: true})
     public firstName: string;
 
-    @Column({ name: 'last_name', length: 20, nullable: true })
+    @Column({name: 'last_name', length: 20, nullable: true})
     public lastName: string;
 
-    @Column({ name: 'mobile_number', length: 10, unique: true })
+    @Column({name: 'mobile_number', length: 10, unique: true})
     public mobileNumber: string;
 
-    @Column({ length: 256, nullable: true })
+    @Column({length: 256, nullable: true})
     public password: string;
+
+    @OneToMany(type => Apartment, apartment => apartment.manager)
+    public apartments: Apartment[];
 
     constructor(user) {
         super();
