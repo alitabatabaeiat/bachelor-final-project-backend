@@ -1,17 +1,18 @@
 import {getCustomRepository, QueryFailedError} from 'typeorm';
 import _ from 'lodash';
 import User from './users.entity';
-import {createUserSchema, getUserSchema} from './users.validation';
+import {createUserSchema, createTempUserSchema, getUserSchema} from './users.validation';
 import {validate, catchExceptions} from '@utils';
 import {ConflictException, ResourceNotFoundException} from '@exceptions';
 import UserRepository from './users.repository';
 import {ObjectLiteral} from "@interfaces";
 
-const createUser = async (data: object): Promise<ObjectLiteral> | never => {
+const createUser = async (data: object, temp: boolean = false): Promise<ObjectLiteral> | never => {
     try {
-        const validData = validate(createUserSchema, data);
+        const validData = validate(temp ? createTempUserSchema : createUserSchema, data);
         const user = new User(validData);
-        user.hashPassword();
+        if (!temp)
+            user.hashPassword();
 
         const repository = getCustomRepository(UserRepository);
         await repository.insert(user);

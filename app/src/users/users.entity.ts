@@ -4,16 +4,16 @@ import bcrypt from "bcryptjs";
 
 @Entity('users')
 class User extends BaseEntity {
-    @Column({ name: 'first_name', length: 20 })
+    @Column({ name: 'first_name', length: 20, nullable: true })
     public firstName: string;
 
-    @Column({ name: 'last_name', length: 20 })
+    @Column({ name: 'last_name', length: 20, nullable: true })
     public lastName: string;
 
     @Column({ name: 'mobile_number', length: 10, unique: true })
     public mobileNumber: string;
 
-    @Column({ length: 256 })
+    @Column({ length: 256, nullable: true })
     public password: string;
 
     constructor(user) {
