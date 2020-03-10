@@ -12,7 +12,7 @@ const createApartmentSchema = Joi.object({
 
 const getApartmentSchema = Joi.object({
     id: Joi.number().integer().greater(0)
-}).xor('id', 'mobileNumber');
+});
 
 export {
     createApartmentSchema,
