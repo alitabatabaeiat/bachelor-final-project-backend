@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "sourceMap": true,
+    "target": "es2017",
+    "outDir": "./dist",
+    "baseUrl": "./app/src",
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "typeRoots": ["app/src/types"],
+    "paths": {
+      "@configs": ["configs/index"],
+      "@utils": ["utils/index"],
+      "@exceptions": ["exceptions/index"],
+      "@middleware": ["middleware/index"],
+      "@interfaces": ["interfaces/index"],
+      "@users": ["users/index"]
+    }
+  },
+  "include": [
+    "./app/src/**/*.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
