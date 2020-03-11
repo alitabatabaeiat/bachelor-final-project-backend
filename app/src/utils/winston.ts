@@ -3,16 +3,23 @@ import {winstonConfig as config} from '@configs';
 
 type CustomLogger = Logger & { mStream?: object };
 
+const fileTransportInstance = new winston.transports.File(config.file);
+const consoleTransportInstance = new winston.transports.Console(config.console);
+
+fileTransportInstance.format = format.combine(
+    format.timestamp({
+        format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    format.json(),
+);
+consoleTransportInstance.format = format.combine(
+    format.json(),
+    format.prettyPrint({colorize: true})
+);
 const logger: CustomLogger = winston.createLogger({
-    format: format.combine(
-        format.timestamp({
-            format: 'YYYY-MM-DD HH:mm:ss'
-        }),
-        format.json()
-    ),
     transports: [
-        new winston.transports.File(config.file),
-        new winston.transports.Console(config.console)
+        fileTransportInstance,
+        consoleTransportInstance
     ],
     exitOnError: false // do not exit on handled exceptions
 });
