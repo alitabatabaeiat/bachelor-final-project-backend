@@ -16,7 +16,8 @@
       "@middleware": ["middleware/index"],
       "@interfaces": ["interfaces/index"],
       "@users": ["users/index"],
-      "@apartments": ["apartments/index"]
+      "@apartments": ["apartments/index"],
+      "@units": ["units/index"]
     }
   },
   "include": [

@@ -1,6 +1,7 @@
-import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
 import {BaseEntity} from "@utils";
 import {User} from "@users";
+import {Unit} from "@units";
 
 @Entity('apartments')
 class Apartment extends BaseEntity {
@@ -13,9 +14,12 @@ class Apartment extends BaseEntity {
     @Column({length: 100})
     public address: string;
 
-    @ManyToOne(type => User, user => user.apartments)
+    @ManyToOne(type => User, user => user.apartments, {nullable: false})
     @JoinColumn({name: 'manager_id'})
     public manager: User;
+
+    @OneToMany(type => Unit, unit => unit.apartment)
+    public units: Unit[];
 
     constructor(apartment) {
         super();

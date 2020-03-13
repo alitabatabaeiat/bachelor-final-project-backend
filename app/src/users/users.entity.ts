@@ -2,6 +2,7 @@ import {Column, Entity, OneToMany} from "typeorm";
 import {BaseEntity} from "@utils";
 import bcrypt from "bcryptjs";
 import {Apartment} from "../apartments";
+import {Unit} from "@units";
 
 @Entity('users')
 class User extends BaseEntity {
@@ -19,6 +20,9 @@ class User extends BaseEntity {
 
     @OneToMany(type => Apartment, apartment => apartment.manager)
     public apartments: Apartment[];
+
+    @OneToMany(type => Unit, unit => unit.resident)
+    public units: Unit[];
 
     constructor(user) {
         super();
