@@ -1,14 +1,14 @@
 import {getCustomRepository} from 'typeorm';
 import _ from 'lodash';
 import Unit from './units.entity';
-import {createUnitSchema, getUnitSchema, deleteUnitSchema} from './units.validation';
+import {createUnitSchema, getAllUnitsSchema, getUnitSchema, deleteUnitSchema} from './units.validation';
 import {validate, catchExceptions, renameKey} from '@utils';
 import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions';
 import UnitRepository from './units.repository';
-import {ObjectLiteral} from "@interfaces";
+import {ObjectLiteral, User} from "@interfaces";
 import Apartment from "../apartments/apartments.entity";
 
-const createUnit = async (user: number, data: object): Promise<ObjectLiteral> | never => {
+const createUnit = async (user: number, data: ObjectLiteral): Promise<ObjectLiteral> | never => {
     try {
         let validData = validate(createUnitSchema, data);
         validData = renameKey(validData, 'apartmentId', 'apartment');
@@ -22,14 +22,32 @@ const createUnit = async (user: number, data: object): Promise<ObjectLiteral> | 
     }
 };
 
-const getUnit = async (user: number, data: object): Promise<ObjectLiteral> | never => {
+const getAllUnits = async (user: User, data: ObjectLiteral, apartment: Apartment): Promise<ObjectLiteral> | never => {
+    try {
+        const validData = validate(getAllUnitsSchema, data);
+        const repository = getCustomRepository(UnitRepository);
+        if (apartment.manager.id !== user.id)
+            throw new PermissionDeniedException("You don't have permission to get units of this apartment");
+        const units = await repository.find({
+            where: {
+                apartment: validData.apartmentId
+            },
+            select: ['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'isEmpty']
+        });
+        return units;
+    } catch (ex) {
+        catchExceptions(ex);
+    }
+};
+
+const getUnit = async (user: User, data: ObjectLiteral): Promise<ObjectLiteral> | never => {
     try {
         const validData = validate(getUnitSchema, data);
         const repository = getCustomRepository(UnitRepository);
         const unit = await repository.findOne({
             where: {
                 id: validData.id,
-                resident: user,
+                resident: user.id,
                 apartment: validData.apartmentId
             },
             select: ['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'isEmpty']
@@ -40,7 +58,6 @@ const getUnit = async (user: number, data: object): Promise<ObjectLiteral> | nev
     } catch (ex) {
         catchExceptions(ex);
     }
-    return {};
 };
 
 const deleteUnit = async (user: ObjectLiteral, data: ObjectLiteral, apartment: Apartment): Promise<void> | never => {
@@ -69,6 +86,7 @@ const deleteUnit = async (user: ObjectLiteral, data: ObjectLiteral, apartment: A
 
 const service = {
     createUnit,
+    getAllUnits,
     getUnit,
     deleteUnit
 };

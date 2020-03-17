@@ -5,6 +5,7 @@ import {asyncWrapper} from '@utils';
 const router = Router({mergeParams: true});
 
 router.post('/', asyncWrapper(controller.createUnit));
+router.get('/', asyncWrapper(controller.getAllUnits));
 router.get('/:id', asyncWrapper(controller.getUnit));
 router.delete('/:id', asyncWrapper(controller.deleteUnit));
 

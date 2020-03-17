@@ -6,26 +6,34 @@ import _ from "lodash";
 const createUnit = async (req: Request, res: express.Response) => {
     const { user, body, params } = req;
     const extendedBody = _.assign(body, {apartmentId: params.apartmentId});
-    const apartment = await service.createUnit(user.id, extendedBody);
+    const unit = await service.createUnit(user.id, extendedBody);
     res.status(201).jsend.success('Unit created successfully');
+};
+
+const getAllUnits = async (req: Request, res: express.Response) => {
+    const { user, apartment, body, params } = req;
+    const extendedBody = _.assign(body, {apartmentId: params.apartmentId});
+    const units = await service.getAllUnits(user, extendedBody, apartment);
+    res.jsend.success(units);
 };
 
 const getUnit = async (req: Request, res: express.Response) => {
     const { user, body, params } = req;
     const extendedBody = _.assign(body, {id: params.id, apartmentId: params.apartmentId});
-    const apartment = await service.getUnit(user.id, extendedBody);
-    res.jsend.success(apartment);
+    const unit = await service.getUnit(user, extendedBody);
+    res.jsend.success(unit);
 };
 
 const deleteUnit = async (req: Request, res: express.Response) => {
     const { user, apartment, body, params } = req;
     const extendedBody = _.assign(body, {id: params.id, apartmentId: params.apartmentId});
     await service.deleteUnit(user, extendedBody, apartment);
-    res.jsend.success(apartment);
+    res.jsend.success('Unit deleted successfully');
 };
 
 export default {
     createUnit,
+    getAllUnits,
     getUnit,
     deleteUnit
 }
