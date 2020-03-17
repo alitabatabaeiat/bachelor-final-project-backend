@@ -9,6 +9,12 @@ const createApartment = async (req: Request, res: express.Response) => {
     res.status(201).jsend.success('Apartment created successfully');
 };
 
+const getAllApartments = async (req: Request, res: express.Response) => {
+    const { user, body } = req;
+    const apartments = await service.getAllApartments(user, body);
+    res.jsend.success(apartments);
+};
+
 const getApartment = async (req: Request, res: express.Response) => {
     const { user, body, params } = req;
     const extendedBody = _.assign(body, {id: params.id});
@@ -25,6 +31,7 @@ const deleteApartment = async (req: Request, res: express.Response) => {
 
 export default {
     createApartment,
+    getAllApartments,
     getApartment,
     deleteApartment
 }

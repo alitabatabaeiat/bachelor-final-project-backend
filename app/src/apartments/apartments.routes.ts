@@ -7,6 +7,7 @@ import {apartmentMiddleware} from "@middleware";
 const router = Router();
 
 router.post('/', asyncWrapper(controller.createApartment));
+router.get('/', asyncWrapper(controller.getAllApartments));
 router.get('/:id', asyncWrapper(controller.getApartment));
 router.delete('/:id', asyncWrapper(controller.deleteApartment));
 

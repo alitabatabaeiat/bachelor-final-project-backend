@@ -10,6 +10,9 @@ const createApartmentSchema = Joi.object({
     address: Joi.string().pattern(persianRex.text, {name: 'persianText'}).min(3).max(100).required(),
 });
 
+const getAllApartmentsSchema = Joi.object({
+});
+
 const getApartmentSchema = Joi.object({
     id: Joi.number().integer().greater(0)
 });
@@ -20,6 +23,7 @@ const deleteApartmentSchema = Joi.object({
 
 export {
     createApartmentSchema,
+    getAllApartmentsSchema,
     getApartmentSchema,
     deleteApartmentSchema
 }

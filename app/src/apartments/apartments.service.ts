@@ -1,11 +1,11 @@
 import {getCustomRepository} from 'typeorm';
 import _ from 'lodash';
 import Apartment from './apartments.entity';
-import {createApartmentSchema, getApartmentSchema, deleteApartmentSchema} from './apartments.validation';
+import {createApartmentSchema, getAllApartmentsSchema, getApartmentSchema, deleteApartmentSchema} from './apartments.validation';
 import {validate, catchExceptions} from '@utils';
 import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions';
 import ApartmentRepository from './apartments.repository';
-import {ObjectLiteral} from "@interfaces";
+import {ObjectLiteral, User} from "@interfaces";
 import {UnitService} from '@units'
 
 const createApartment = async (user: number, data: object): Promise<ObjectLiteral> | never => {
@@ -15,6 +15,22 @@ const createApartment = async (user: number, data: object): Promise<ObjectLitera
         const repository = getCustomRepository(ApartmentRepository);
         await repository.insert(apartment);
         return _.pick(apartment, ['id', 'title', 'city', 'address']);
+    } catch (ex) {
+        catchExceptions(ex);
+    }
+};
+
+const getAllApartments = async (user: User, data: object): Promise<Apartment[]> | never => {
+    try {
+        const validData = validate(getAllApartmentsSchema, data);
+        const repository = getCustomRepository(ApartmentRepository);
+        const apartments = await repository.find({
+            where: {
+                manager: user.id
+            },
+            select: ['id', 'title', 'city', 'address']
+        });
+        return apartments;
     } catch (ex) {
         catchExceptions(ex);
     }
@@ -69,6 +85,7 @@ const deleteApartment = async (user: ObjectLiteral, data: object): Promise<void>
 
 const service = {
     createApartment,
+    getAllApartments,
     getApartment,
     deleteApartment
 };
