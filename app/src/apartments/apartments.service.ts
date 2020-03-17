@@ -20,7 +20,7 @@ const createApartment = async (user: number, data: object): Promise<ObjectLitera
     }
 };
 
-const getApartment = async (user: number, data: object, options?: ObjectLiteral): Promise<ObjectLiteral> | never => {
+const getApartment = async (user: number, data: object): Promise<Apartment> | never => {
     try {
         const validData = validate(getApartmentSchema, data);
         const repository = getCustomRepository(ApartmentRepository);

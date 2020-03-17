@@ -52,7 +52,6 @@ const deleteUnit = async (user: ObjectLiteral, data: ObjectLiteral, apartment: A
                 id: validData.id,
                 apartment: validData.apartmentId
             },
-            select: ['id'],
             loadRelationIds: true
         });
         if (!unit)

@@ -1,21 +1,22 @@
-import {Request, Response} from "express";
+import express from "express";
+import {Request} from '@interfaces';
 import service from "./apartments.service";
 import _ from "lodash";
 
-const createApartment = async (req: Request, res: Response) => {
+const createApartment = async (req: Request, res: express.Response) => {
     const { user, body } = req;
     const apartment = await service.createApartment(user.id, body);
     res.status(201).jsend.success('Apartment created successfully');
 };
 
-const getApartment = async (req: Request, res: Response) => {
+const getApartment = async (req: Request, res: express.Response) => {
     const { user, body, params } = req;
     const extendedBody = _.assign(body, {id: params.id});
     const apartment = await service.getApartment(user.id, extendedBody);
     res.jsend.success(apartment);
 };
 
-const deleteApartment = async (req: Request, res: Response) => {
+const deleteApartment = async (req: Request, res: express.Response) => {
     const { user, body, params } = req;
     const extendedBody = _.assign(body, {id: params.id});
     await service.deleteApartment(user, extendedBody);

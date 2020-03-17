@@ -6,5 +6,6 @@ const router = Router({mergeParams: true});
 
 router.post('/', asyncWrapper(controller.createUnit));
 router.get('/:id', asyncWrapper(controller.getUnit));
+router.delete('/:id', asyncWrapper(controller.deleteUnit));
 
 export default router;

@@ -1,9 +1,10 @@
-import {NextFunction, Request, Response} from 'express';
+import express from "express";
+import {Request} from '@interfaces';
 import {ConflictException, HttpException, ResourceNotFoundException, ValidationException} from '@exceptions';
 import {winston} from '@utils';
 
 const errorMiddleware = () =>
-    (error: HttpException, req: Request, res: Response, next: NextFunction) => {
+    (error: HttpException, req: Request, res: express.Response, next: express.NextFunction) => {
         res.status(error.status);
         if (error instanceof ResourceNotFoundException)
             res.jsend.fail(error.message);

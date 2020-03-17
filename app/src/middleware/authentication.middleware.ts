@@ -1,7 +1,9 @@
-import {Request, Response, NextFunction} from "express"
+import express from "express";
+import {Request} from '@interfaces';
+import _ from "lodash";
 
 const authenticationMiddleware = () =>
-    (req: Request, res: Response, next: NextFunction): void => {
+    (req: Request, res: express.Response, next: express.NextFunction): void => {
         req.user = {id: 1};
         next()
     };
