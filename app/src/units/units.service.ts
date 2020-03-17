@@ -54,9 +54,10 @@ const deleteUnit = async (user: ObjectLiteral, data: ObjectLiteral, apartment: A
             },
             loadRelationIds: true
         });
+        console.log(apartment);
         if (!unit)
             throw new ResourceNotFoundException('Unit not found');
-        if (apartment.manager !== user.id)
+        if (apartment.manager !== user.id && apartment.manager.id !== user.id)
             throw new PermissionDeniedException("You don't have permission to delete this unit");
         if (unit.resident)
             throw new PermissionDeniedException("You don't have permission to delete unit with resident");

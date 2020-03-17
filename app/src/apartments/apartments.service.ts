@@ -24,13 +24,14 @@ const getApartment = async (user: number, data: object): Promise<Apartment> | ne
     try {
         const validData = validate(getApartmentSchema, data);
         const repository = getCustomRepository(ApartmentRepository);
-        const apartment = await repository.findOne({
-            where: {
-                id: validData.id,
-                manager: user
-            },
-            select: ['id', 'title', 'city', 'address']
-        });
+        const apartment = await repository.createQueryBuilder('apt')
+            .select(['apt.id', 'apt.title', 'apt.city', 'apt.address'])
+            .addSelect(['manager.id', 'manager.firstName', 'manager.lastName'])
+            .leftJoin('apt.manager', 'manager')
+            .where('apt.id = :id')
+            .andWhere('apt.manager = :managerId')
+            .setParameters({id: validData.id, managerId: user})
+            .getOne();
         if (!apartment)
             throw new ResourceNotFoundException('Apartment not found');
         return apartment;
