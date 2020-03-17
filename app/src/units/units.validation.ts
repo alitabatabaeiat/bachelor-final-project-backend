@@ -20,7 +20,13 @@ const getUnitSchema = Joi.object({
     apartmentId: Joi.number().integer().greater(0)
 });
 
+const deleteUnitSchema = Joi.object({
+    id: Joi.number().integer().greater(0),
+    apartmentId: Joi.number().integer().greater(0)
+});
+
 export {
     createUnitSchema,
-    getUnitSchema
+    getUnitSchema,
+    deleteUnitSchema
 }

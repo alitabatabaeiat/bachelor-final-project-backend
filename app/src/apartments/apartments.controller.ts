@@ -15,7 +15,15 @@ const getApartment = async (req: Request, res: Response) => {
     res.jsend.success(apartment);
 };
 
+const deleteApartment = async (req: Request, res: Response) => {
+    const { user, body, params } = req;
+    const extendedBody = _.assign(body, {id: params.id});
+    await service.deleteApartment(user, extendedBody);
+    res.jsend.success('Apartment deleted successfully');
+};
+
 export default {
     createApartment,
-    getApartment
+    getApartment,
+    deleteApartment
 }

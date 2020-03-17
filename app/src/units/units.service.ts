@@ -1,11 +1,12 @@
 import {getCustomRepository} from 'typeorm';
 import _ from 'lodash';
 import Unit from './units.entity';
-import {createUnitSchema, getUnitSchema} from './units.validation';
+import {createUnitSchema, getUnitSchema, deleteUnitSchema} from './units.validation';
 import {validate, catchExceptions, renameKey} from '@utils';
-import {ResourceNotFoundException} from '@exceptions';
+import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions';
 import UnitRepository from './units.repository';
 import {ObjectLiteral} from "@interfaces";
+import Apartment from "../apartments/apartments.entity";
 
 const createUnit = async (user: number, data: object): Promise<ObjectLiteral> | never => {
     try {
@@ -42,9 +43,34 @@ const getUnit = async (user: number, data: object): Promise<ObjectLiteral> | nev
     return {};
 };
 
+const deleteUnit = async (user: ObjectLiteral, data: ObjectLiteral, apartment: Apartment): Promise<void> | never => {
+    try {
+        const validData = validate(deleteUnitSchema, data);
+        const repository = getCustomRepository(UnitRepository);
+        const unit = await repository.findOne({
+            where: {
+                id: validData.id,
+                apartment: validData.apartmentId
+            },
+            select: ['id'],
+            loadRelationIds: true
+        });
+        if (!unit)
+            throw new ResourceNotFoundException('Unit not found');
+        if (apartment.manager !== user.id)
+            throw new PermissionDeniedException("You don't have permission to delete this unit");
+        if (unit.resident)
+            throw new PermissionDeniedException("You don't have permission to delete unit with resident");
+        await repository.delete(unit.id);
+    } catch (ex) {
+        catchExceptions(ex);
+    }
+};
+
 const service = {
     createUnit,
-    getUnit
+    getUnit,
+    deleteUnit
 };
 
 export default service;

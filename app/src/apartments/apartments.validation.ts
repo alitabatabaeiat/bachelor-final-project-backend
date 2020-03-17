@@ -14,7 +14,12 @@ const getApartmentSchema = Joi.object({
     id: Joi.number().integer().greater(0)
 });
 
+const deleteApartmentSchema = Joi.object({
+    id: Joi.number().integer().greater(0)
+});
+
 export {
     createApartmentSchema,
-    getApartmentSchema
+    getApartmentSchema,
+    deleteApartmentSchema
 }

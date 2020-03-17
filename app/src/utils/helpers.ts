@@ -16,10 +16,10 @@ const asyncWrapper = (handler: Function): RequestHandler => {
 
 const catchExceptions = (ex: Error, catchAdditionalExceptions?: Function): never => {
     winston.error(ex);
-    if (ex instanceof HttpException)
-        throw ex;
     if (catchAdditionalExceptions)
         catchAdditionalExceptions(ex);
+    if (ex instanceof HttpException)
+        throw ex;
     throw new HttpException();
 };
 

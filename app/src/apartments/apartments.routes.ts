@@ -8,6 +8,7 @@ const router = Router();
 
 router.post('/', asyncWrapper(controller.createApartment));
 router.get('/:id', asyncWrapper(controller.getApartment));
+router.delete('/:id', asyncWrapper(controller.deleteApartment));
 
 router.use('/:apartmentId/units', apartmentMiddleware(), unitsRouter);
 
