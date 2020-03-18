@@ -7,7 +7,7 @@ import _ from "lodash";
 const asyncWrapper = (handler: Function): RequestHandler => {
     return async (req: Request, res: Response, next: NextFunction): Promise<void> => {
         try {
-            await handler(req, res);
+            await handler(req, res, next);
         } catch (ex) {
             next(ex)
         }

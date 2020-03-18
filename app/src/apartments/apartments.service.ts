@@ -36,7 +36,7 @@ const getAllApartments = async (user: User, data: object): Promise<Apartment[]> 
     }
 };
 
-const getApartment = async (user: number, data: object): Promise<Apartment> | never => {
+const getApartment = async (user: User, data: ObjectLiteral): Promise<Apartment> | never => {
     try {
         const validData = validate(getApartmentSchema, data);
         const repository = getCustomRepository(ApartmentRepository);
@@ -46,7 +46,7 @@ const getApartment = async (user: number, data: object): Promise<Apartment> | ne
             .leftJoin('apt.manager', 'manager')
             .where('apt.id = :id')
             .andWhere('apt.manager = :managerId')
-            .setParameters({id: validData.id, managerId: user})
+            .setParameters({id: validData.id, managerId: user.id})
             .getOne();
         if (!apartment)
             throw new ResourceNotFoundException('Apartment not found');
@@ -71,7 +71,7 @@ const deleteApartment = async (user: ObjectLiteral, data: object): Promise<void>
             throw new ResourceNotFoundException('Apartment not found');
         if (apartment.units.length > 0) {
             await Promise.all(apartment.units.map(async unit =>
-                await UnitService.deleteUnit(user, {id: unit, apartmentId: apartment.id}, apartment)
+                await UnitService.deleteUnit(user, {id: unit})
             ));
         }
         await repository.delete(apartment.id);

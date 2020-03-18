@@ -18,7 +18,7 @@ const getAllApartments = async (req: Request, res: express.Response) => {
 const getApartment = async (req: Request, res: express.Response) => {
     const { user, body, params } = req;
     const extendedBody = _.assign(body, {id: params.id});
-    const apartment = await service.getApartment(user.id, extendedBody);
+    const apartment = await service.getApartment(user, extendedBody);
     res.jsend.success(apartment);
 };
 

@@ -12,26 +12,33 @@ const createUnitSchema = Joi.object({
     residentCount: Joi.number().integer().min(0).required(),
     fixedCharge: Joi.number().integer().min(0),
     isEmpty: Joi.boolean().required(),
-    apartmentId: Joi.number().integer().greater(0).required()
+    apartment: Joi.number().integer().greater(0).required()
 });
 
-const getAllUnitsSchema = Joi.object({
-    apartmentId: Joi.number().integer().greater(0)
+const getResidentUnitsSchema = Joi.object({
 });
 
-const getUnitSchema = Joi.object({
-    id: Joi.number().integer().greater(0),
-    apartmentId: Joi.number().integer().greater(0)
+const getApartmentUnitsSchema = Joi.object({
+    apartment: Joi.number().integer().greater(0).required()
+});
+
+const getUnitAsResidentSchema = Joi.object({
+    id: Joi.number().integer().greater(0).required()
+});
+
+const getUnitAsManagerSchema = Joi.object({
+    id: Joi.number().integer().greater(0).required()
 });
 
 const deleteUnitSchema = Joi.object({
-    id: Joi.number().integer().greater(0),
-    apartmentId: Joi.number().integer().greater(0)
+    id: Joi.number().integer().greater(0).required()
 });
 
 export {
     createUnitSchema,
-    getAllUnitsSchema,
-    getUnitSchema,
+    getResidentUnitsSchema,
+    getApartmentUnitsSchema,
+    getUnitAsResidentSchema,
+    getUnitAsManagerSchema,
     deleteUnitSchema
 }

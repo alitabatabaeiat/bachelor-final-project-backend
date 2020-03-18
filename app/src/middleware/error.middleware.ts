@@ -5,6 +5,7 @@ import {winston} from '@utils';
 
 const errorMiddleware = () =>
     (error: HttpException, req: Request, res: express.Response, next: express.NextFunction) => {
+        console.log(error);
         res.status(error.status);
         if (error instanceof ResourceNotFoundException)
             res.jsend.fail(error.message);

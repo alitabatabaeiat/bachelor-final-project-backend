@@ -2,7 +2,7 @@ import {Router} from 'express';
 import controller from './units.controller';
 import {asyncWrapper} from '@utils';
 
-const router = Router({mergeParams: true});
+const router = Router();
 
 router.post('/', asyncWrapper(controller.createUnit));
 router.get('/', asyncWrapper(controller.getAllUnits));

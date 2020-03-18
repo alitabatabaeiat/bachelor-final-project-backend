@@ -15,6 +15,7 @@
       "@exceptions": ["exceptions/index"],
       "@middleware": ["middleware/index"],
       "@interfaces": ["interfaces/index"],
+      "@constants": ["constants/index"],
       "@users": ["users/index"],
       "@apartments": ["apartments/index"],
       "@units": ["units/index"]
