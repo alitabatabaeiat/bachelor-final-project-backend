@@ -33,21 +33,6 @@ class Unit extends BaseEntity {
     @ManyToOne(type => User, user => user.units)
     @JoinColumn({name: 'resident_id'})
     public resident: User;
-
-    constructor(unit) {
-        super();
-        if (unit) {
-            this.title = unit.title;
-            this.floor = unit.floor;
-            this.area = unit.area;
-            this.parkingSpaceCount = unit.parkingSpaceCount;
-            this.residentCount = unit.residentCount;
-            this.fixedCharge = unit.fixedCharge;
-            this.isEmpty = unit.isEmpty;
-            this.apartment = unit.apartment;
-            this.resident = unit.resident;
-        }
-    }
 }
 
 export default Unit;

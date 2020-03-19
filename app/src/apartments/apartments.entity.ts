@@ -20,16 +20,6 @@ class Apartment extends BaseEntity {
 
     @OneToMany(type => Unit, unit => unit.apartment)
     public units: Unit[];
-
-    constructor(apartment) {
-        super();
-        if (apartment) {
-            this.title = apartment.title;
-            this.city = apartment.city;
-            this.address = apartment.address;
-            this.manager = apartment.manager;
-        }
-    }
 }
 
 export default Apartment;

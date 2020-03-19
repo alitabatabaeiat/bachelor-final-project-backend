@@ -17,9 +17,9 @@ const createApartment = async (user: number, data: ObjectLiteral): Promise<Apart
     try {
         const validData = validate(createApartmentSchema, data);
         const repository = getCustomRepository(ApartmentRepository);
-        const apartment: Apartment = repository.create(_.assign(validData, {manager: user}));
+        const apartment = repository.create(_.assign(validData, {manager: user}));
         await repository.insert(apartment);
-        return <Apartment>_.pick(apartment, ['id', 'title', 'city', 'address']);
+        return _.pick(apartment, ['id', 'title', 'city', 'address']) as Apartment;
     } catch (ex) {
         catchExceptions(ex);
     }

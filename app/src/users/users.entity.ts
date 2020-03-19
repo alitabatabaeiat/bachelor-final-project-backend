@@ -24,16 +24,6 @@ class User extends BaseEntity {
     @OneToMany(type => Unit, unit => unit.resident)
     public units: Unit[];
 
-    constructor(user) {
-        super();
-        if (user) {
-            this.firstName = user.firstName;
-            this.lastName = user.lastName;
-            this.mobileNumber = user.mobileNumber;
-            this.password = user.password;
-        }
-    }
-
     hashPassword() {
         this.password = bcrypt.hashSync(this.password, 8);
     }

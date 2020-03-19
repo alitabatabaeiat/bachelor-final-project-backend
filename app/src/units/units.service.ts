@@ -17,9 +17,8 @@ import {ObjectLiteral, User} from "@interfaces";
 const createUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | never => {
     try {
         let validData = validate(createUnitSchema, data);
-        const unit = new Unit(_.assign(validData, {resident: user.id}));
-        console.log(unit);
         const repository = getCustomRepository(UnitRepository);
+        const unit = repository.create(_.assign(validData, {resident: user.id}));
         await repository.insert(unit);
         return _.pick(unit, ['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount',
             'fixedCharge', 'isEmpty']) as Unit;
