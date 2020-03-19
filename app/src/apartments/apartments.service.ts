@@ -1,34 +1,38 @@
 import {getCustomRepository} from 'typeorm';
 import _ from 'lodash';
 import Apartment from './apartments.entity';
-import {createApartmentSchema, getAllApartmentsSchema, getApartmentSchema, deleteApartmentSchema} from './apartments.validation';
+import {
+    createApartmentSchema,
+    getAllApartmentsSchema,
+    getApartmentSchema,
+    deleteApartmentSchema
+} from './apartments.validation';
 import {validate, catchExceptions} from '@utils';
 import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions';
 import ApartmentRepository from './apartments.repository';
 import {ObjectLiteral, User} from "@interfaces";
 import {UnitService} from '@units'
 
-const createApartment = async (user: number, data: object): Promise<ObjectLiteral> | never => {
+const createApartment = async (user: number, data: ObjectLiteral): Promise<Apartment> | never => {
     try {
         const validData = validate(createApartmentSchema, data);
-        const apartment = new Apartment(_.assign(validData, {manager: user}));
         const repository = getCustomRepository(ApartmentRepository);
+        const apartment: Apartment = repository.create(_.assign(validData, {manager: user}));
         await repository.insert(apartment);
-        return _.pick(apartment, ['id', 'title', 'city', 'address']);
+        return <Apartment>_.pick(apartment, ['id', 'title', 'city', 'address']);
     } catch (ex) {
         catchExceptions(ex);
     }
 };
 
-const getAllApartments = async (user: User, data: object): Promise<Apartment[]> | never => {
+const getAllApartments = async (user: User, data: ObjectLiteral): Promise<Apartment[]> | never => {
     try {
         const validData = validate(getAllApartmentsSchema, data);
         const repository = getCustomRepository(ApartmentRepository);
         const apartments = await repository.find({
             where: {
                 manager: user.id
-            },
-            select: ['id', 'title', 'city', 'address']
+            }
         });
         return apartments;
     } catch (ex) {
@@ -40,14 +44,13 @@ const getApartment = async (user: User, data: ObjectLiteral): Promise<Apartment>
     try {
         const validData = validate(getApartmentSchema, data);
         const repository = getCustomRepository(ApartmentRepository);
-        const apartment = await repository.createQueryBuilder('apt')
-            .select(['apt.id', 'apt.title', 'apt.city', 'apt.address'])
-            .addSelect(['manager.id', 'manager.firstName', 'manager.lastName'])
-            .leftJoin('apt.manager', 'manager')
-            .where('apt.id = :id')
-            .andWhere('apt.manager = :managerId')
-            .setParameters({id: validData.id, managerId: user.id})
-            .getOne();
+        const apartment = await repository.findOne({
+            where: {
+                id: validData.id,
+                manager: user.id
+            },
+            relations: ['manager']
+        });
         if (!apartment)
             throw new ResourceNotFoundException('Apartment not found');
         return apartment;
@@ -56,7 +59,7 @@ const getApartment = async (user: User, data: ObjectLiteral): Promise<Apartment>
     }
 };
 
-const deleteApartment = async (user: ObjectLiteral, data: object): Promise<void> | never => {
+const deleteApartment = async (user: User, data: ObjectLiteral): Promise<void> | never => {
     try {
         const validData = validate(deleteApartmentSchema, data);
         const repository = getCustomRepository(ApartmentRepository);

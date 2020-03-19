@@ -3,7 +3,6 @@ import {Request} from '@interfaces';
 import service from "./units.service";
 import _ from "lodash";
 import {RESIDENT} from "@constants";
-import {renameKey} from "@utils";
 
 const createUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
     const {baseUrl, user, body} = req;

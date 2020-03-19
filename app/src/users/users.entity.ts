@@ -15,7 +15,7 @@ class User extends BaseEntity {
     @Column({name: 'mobile_number', length: 10, unique: true})
     public mobileNumber: string;
 
-    @Column({length: 256, nullable: true})
+    @Column({length: 256, nullable: true, select: false})
     public password: string;
 
     @OneToMany(type => Apartment, apartment => apartment.manager)
