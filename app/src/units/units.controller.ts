@@ -34,6 +34,15 @@ const getUnit = async (req: Request, res: express.Response) => {
     res.jsend.success(unit);
 };
 
+const updateUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
+    const {baseUrl, user, body, params} = req;
+    if (_.includes(baseUrl, RESIDENT))
+        return next();
+    const extendedBody = _.assign(body, {id: params.id});
+    await service.updateUnit(user, extendedBody);
+    res.jsend.success('Unit updated successfully');
+};
+
 const deleteUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
     const {baseUrl, user, body, params} = req;
     if (_.includes(baseUrl, RESIDENT))
@@ -47,5 +56,6 @@ export default {
     createUnit,
     getAllUnits,
     getUnit,
+    updateUnit,
     deleteUnit
 }

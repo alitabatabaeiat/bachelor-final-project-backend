@@ -30,6 +30,17 @@ const getUnitAsManagerSchema = Joi.object({
     id: Joi.number().integer().greater(0).required()
 });
 
+const updateUnitSchema = Joi.object({
+    id: Joi.number().integer().greater(0).required(),
+    title: Joi.string().pattern(persianRex.text, {name: 'persianText'}).min(3).max(25),
+    floor: Joi.number().integer(),
+    area: Joi.number().integer().positive(),
+    parkingSpaceCount: Joi.number().integer().min(0),
+    residentCount: Joi.number().integer().min(0),
+    fixedCharge: Joi.number().integer().min(0),
+    isEmpty: Joi.boolean()
+});
+
 const deleteUnitSchema = Joi.object({
     id: Joi.number().integer().greater(0).required()
 });
@@ -40,5 +51,6 @@ export {
     getApartmentUnitsSchema,
     getUnitAsResidentSchema,
     getUnitAsManagerSchema,
+    updateUnitSchema,
     deleteUnitSchema
 }

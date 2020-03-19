@@ -7,6 +7,7 @@ import {
     getApartmentUnitsSchema,
     getUnitAsResidentSchema,
     getUnitAsManagerSchema,
+    updateUnitSchema,
     deleteUnitSchema
 } from './units.validation';
 import {validate, catchExceptions} from '@utils';
@@ -97,6 +98,28 @@ const getUnitAsManager = async (user: User, data: ObjectLiteral): Promise<Unit> 
     }
 };
 
+const updateUnit = async (user: User, data: ObjectLiteral): Promise<void> | never => {
+    try {
+        const validData = validate(updateUnitSchema, data);
+        const repository = getCustomRepository(UnitRepository);
+        const unit = await repository.createQueryBuilder('unit')
+            .select(['unit.id', 'resident.id'])
+            .leftJoin('unit.apartment', 'apt', 'apt.manager = :manager')
+            .leftJoin('unit.resident', 'resident')
+            .where('unit.id = :id')
+            .setParameters({
+                id: validData.id,
+                manager: user.id
+            })
+            .getOne();
+        if (!unit)
+            throw new ResourceNotFoundException('Unit not found');
+        await repository.update(unit.id, validData);
+    } catch (ex) {
+        catchExceptions(ex);
+    }
+};
+
 const deleteUnit = async (user: User, data: ObjectLiteral, skipManagerChecking: boolean = false): Promise<void> | never => {
     try {
         const validData = validate(deleteUnitSchema, data);
@@ -126,6 +149,7 @@ const service = {
     getApartmentUnits,
     getUnitAsResident,
     getUnitAsManager,
+    updateUnit,
     deleteUnit
 };
 
