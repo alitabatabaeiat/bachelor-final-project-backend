@@ -2,6 +2,7 @@ import express from "express";
 import {Request} from '@interfaces';
 import service from "./apartments.service";
 import _ from "lodash";
+import {RESIDENT} from "@constants";
 
 const createApartment = async (req: Request, res: express.Response) => {
     const { user, body } = req;
@@ -22,6 +23,15 @@ const getApartment = async (req: Request, res: express.Response) => {
     res.jsend.success(apartment);
 };
 
+const updateApartment = async (req: Request, res: express.Response, next: express.NextFunction) => {
+    const {baseUrl, user, body, params} = req;
+    if (_.includes(baseUrl, RESIDENT))
+        return next();
+    const extendedBody = _.assign(body, {id: params.id});
+    await service.updateApartment(user, extendedBody);
+    res.jsend.success('Apartment updated successfully');
+};
+
 const deleteApartment = async (req: Request, res: express.Response) => {
     const { user, body, params } = req;
     const extendedBody = _.assign(body, {id: params.id});
@@ -33,5 +43,6 @@ export default {
     createApartment,
     getAllApartments,
     getApartment,
+    updateApartment,
     deleteApartment
 }

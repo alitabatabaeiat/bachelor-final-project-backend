@@ -5,6 +5,7 @@ import {
     createApartmentSchema,
     getAllApartmentsSchema,
     getApartmentSchema,
+    updateApartmentSchema,
     deleteApartmentSchema
 } from './apartments.validation';
 import {validate, catchExceptions} from '@utils';
@@ -59,6 +60,25 @@ const getApartment = async (user: User, data: ObjectLiteral): Promise<Apartment>
     }
 };
 
+const updateApartment = async (user: User, data: ObjectLiteral): Promise<void> | never => {
+    try {
+        const validData = validate(updateApartmentSchema, data);
+        const repository = getCustomRepository(ApartmentRepository);
+        const apartment = await repository.findOne({
+            where: {
+                id: validData.id,
+                manager: user.id
+            },
+            select: ['id']
+        });
+        if (!apartment)
+            throw new ResourceNotFoundException('Apartment not found');
+        await repository.update(apartment.id, validData);
+    } catch (ex) {
+        catchExceptions(ex);
+    }
+};
+
 const deleteApartment = async (user: User, data: ObjectLiteral): Promise<void> | never => {
     try {
         const validData = validate(deleteApartmentSchema, data);
@@ -90,6 +110,7 @@ const service = {
     createApartment,
     getAllApartments,
     getApartment,
+    updateApartment,
     deleteApartment
 };
 
