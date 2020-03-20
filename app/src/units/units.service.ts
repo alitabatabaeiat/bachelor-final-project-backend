@@ -14,12 +14,22 @@ import {validate, catchExceptions} from '@utils';
 import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions';
 import UnitRepository from './units.repository';
 import {ObjectLiteral, User} from "@interfaces";
+import {UserService} from '@users';
 
 const createUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | never => {
     try {
         let validData = validate(createUnitSchema, data);
         const repository = getCustomRepository(UnitRepository);
-        const unit = repository.create(_.assign(validData, {resident: user.id}));
+        if (validData.resident) {
+            const userData = {mobileNumber: validData.resident};
+            const resident = await UserService.getUser(userData)
+                .catch(async ex => {
+                    if (ex instanceof ResourceNotFoundException)
+                        return await UserService.createUser(userData, true);
+                });
+            validData.resident = resident.id;
+        }
+        const unit = repository.create(_.assign(validData));
         await repository.insert(unit);
         return _.pick(unit, ['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount',
             'fixedCharge', 'isEmpty']) as Unit;
@@ -51,7 +61,9 @@ const getApartmentUnits = async (user: User, data: ObjectLiteral): Promise<Unit[
         const repository = getCustomRepository(UnitRepository);
         const units = await repository.createQueryBuilder('unit')
             .select(['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'isEmpty'].map(s => `unit.${s}`))
+            .addSelect(['firstName', 'lastName', 'mobileNumber'].map(s => `resident.${s}`))
             .leftJoin('unit.apartment', 'apt', 'apt.manager = :manager')
+            .leftJoin('unit.resident', 'resident')
             .where('unit.apartment = :apartment')
             .setParameters({manager: user.id, apartment: validData.apartment})
             .getMany();
@@ -86,7 +98,9 @@ const getUnitAsManager = async (user: User, data: ObjectLiteral): Promise<Unit> 
         const repository = getCustomRepository(UnitRepository);
         const unit = await repository.createQueryBuilder('unit')
             .select(['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'isEmpty'].map(s => `unit.${s}`))
+            .addSelect(['firstName', 'lastName', 'mobileNumber'].map(s => `resident.${s}`))
             .leftJoin('unit.apartment', 'apt', 'apt.manager = :manager')
+            .leftJoin('unit.resident', 'resident')
             .where('unit.id = :id')
             .setParameters({id: validData.id, manager: user.id})
             .getOne();
@@ -114,6 +128,15 @@ const updateUnit = async (user: User, data: ObjectLiteral): Promise<void> | neve
             .getOne();
         if (!unit)
             throw new ResourceNotFoundException('Unit not found');
+        if (validData.resident) {
+            const userData = {mobileNumber: validData.resident};
+            const resident = await UserService.getUser(userData)
+                .catch(async ex => {
+                    if (ex instanceof ResourceNotFoundException)
+                        return await UserService.createUser(userData, true);
+                });
+            validData.resident = resident.id;
+        }
         await repository.update(unit.id, validData);
     } catch (ex) {
         catchExceptions(ex);

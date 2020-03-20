@@ -1,48 +1,50 @@
 import Joi from '@hapi/joi';
 import JoiDate from '@hapi/joi-date';
-import persianRex from 'persian-rex';
+import {Rules} from "@utils";
 
 const ExtendedJoi = Joi.extend(JoiDate);
 
 const createUnitSchema = Joi.object({
-    title: Joi.string().pattern(persianRex.text, {name: 'persianText'}).min(3).max(25).required(),
+    title: Rules.persianText.min(3).max(25).required(),
     floor: Joi.number().integer().required(),
     area: Joi.number().integer().positive().required(),
     parkingSpaceCount: Joi.number().integer().min(0).required(),
     residentCount: Joi.number().integer().min(0).required(),
     fixedCharge: Joi.number().integer().min(0),
     isEmpty: Joi.boolean().required(),
-    apartment: Joi.number().integer().greater(0).required()
+    apartment: Rules.id.required(),
+    resident: Rules.mobileNumber
 });
 
 const getResidentUnitsSchema = Joi.object({
 });
 
 const getApartmentUnitsSchema = Joi.object({
-    apartment: Joi.number().integer().greater(0).required()
+    apartment: Rules.id.required()
 });
 
 const getUnitAsResidentSchema = Joi.object({
-    id: Joi.number().integer().greater(0).required()
+    id: Rules.id.required()
 });
 
 const getUnitAsManagerSchema = Joi.object({
-    id: Joi.number().integer().greater(0).required()
+    id: Rules.id.required()
 });
 
 const updateUnitSchema = Joi.object({
-    id: Joi.number().integer().greater(0).required(),
-    title: Joi.string().pattern(persianRex.text, {name: 'persianText'}).min(3).max(25),
+    id: Rules.id.required(),
+    title: Rules.persianText.min(3).max(25),
     floor: Joi.number().integer(),
     area: Joi.number().integer().positive(),
     parkingSpaceCount: Joi.number().integer().min(0),
     residentCount: Joi.number().integer().min(0),
     fixedCharge: Joi.number().integer().min(0),
-    isEmpty: Joi.boolean()
+    isEmpty: Joi.boolean(),
+    resident: Rules.mobileNumber
 });
 
 const deleteUnitSchema = Joi.object({
-    id: Joi.number().integer().greater(0).required()
+    id: Rules.id.required()
 });
 
 export {
