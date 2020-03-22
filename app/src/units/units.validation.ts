@@ -40,7 +40,7 @@ const updateUnitSchema = Joi.object({
     residentCount: Joi.number().integer().min(0),
     fixedCharge: Joi.number().integer().min(0),
     isEmpty: Joi.boolean(),
-    resident: Rules.mobileNumber
+    resident: Rules.mobileNumber.allow(null)
 });
 
 const deleteUnitSchema = Joi.object({
