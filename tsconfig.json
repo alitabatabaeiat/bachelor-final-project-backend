@@ -18,7 +18,8 @@
       "@constants": ["constants/index"],
       "@users": ["users/index"],
       "@apartments": ["apartments/index"],
-      "@units": ["units/index"]
+      "@units": ["units/index"],
+      "@apartmentExpenses": ["apartmentExpenses/index"]
     }
   },
   "include": [

@@ -2,6 +2,7 @@ import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
 import {BaseEntity} from "@utils";
 import {User} from "@users";
 import {Unit} from "@units";
+import {ApartmentExpense} from "@apartmentExpenses";
 
 @Entity('apartments')
 class Apartment extends BaseEntity {
@@ -20,6 +21,10 @@ class Apartment extends BaseEntity {
 
     @OneToMany(type => Unit, unit => unit.apartment)
     public units: Unit[];
+
+    @OneToMany(type => ApartmentExpense,
+            apartmentExpense => apartmentExpense.apartment)
+    public expenses: ApartmentExpense;
 }
 
 export default Apartment;
