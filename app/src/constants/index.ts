@@ -1,1 +1,1 @@
-export {RESIDENT, MANAGER} from './roles';
+export {default as Role} from './roles';

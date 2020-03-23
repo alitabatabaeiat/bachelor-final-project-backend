@@ -1,2 +1,6 @@
-export const RESIDENT = 'resident';
-export const MANAGER = 'manager';
+enum Role {
+    resident = 'resident',
+    manager = 'manager'
+}
+
+export default Role;

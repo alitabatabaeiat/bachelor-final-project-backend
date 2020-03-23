@@ -2,7 +2,7 @@ import express from "express";
 import {Request} from '@interfaces';
 import service from "./apartments.service";
 import _ from "lodash";
-import {RESIDENT} from "@constants";
+import {Role} from "@constants";
 
 const createApartment = async (req: Request, res: express.Response) => {
     const { user, body } = req;
@@ -25,7 +25,7 @@ const getApartment = async (req: Request, res: express.Response) => {
 
 const updateApartment = async (req: Request, res: express.Response, next: express.NextFunction) => {
     const {baseUrl, user, body, params} = req;
-    if (_.includes(baseUrl, RESIDENT))
+    if (_.includes(baseUrl, Role.resident))
         return next();
     const extendedBody = _.assign(body, {id: params.id});
     await service.updateApartment(user, extendedBody);
