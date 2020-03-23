@@ -14,7 +14,7 @@ import ApartmentRepository from './apartments.repository';
 import {ObjectLiteral, User} from "@interfaces";
 import {UnitService} from '@units'
 
-const createApartment = async (user: number, data: ObjectLiteral): Promise<Apartment> | never => {
+const createApartment = async (user: User, data: ObjectLiteral): Promise<Apartment> | never => {
     try {
         const validData = validate(createApartmentSchema, data);
         const repository = getCustomRepository(ApartmentRepository);

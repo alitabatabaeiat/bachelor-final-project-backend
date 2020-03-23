@@ -6,7 +6,7 @@ import {Role} from "@constants";
 
 const createApartment = async (req: Request, res: express.Response) => {
     const { user, body } = req;
-    const apartment = await service.createApartment(user.id, body);
+    const apartment = await service.createApartment(user, body);
     res.status(201).jsend.success('Apartment created successfully');
 };
 
