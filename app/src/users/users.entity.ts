@@ -3,6 +3,7 @@ import {BaseEntity} from "@utils";
 import bcrypt from "bcryptjs";
 import {Apartment} from "../apartments";
 import {Unit} from "@units";
+import {ExpenseType} from "@expenseTypes";
 
 @Entity('users')
 class User extends BaseEntity {
@@ -23,6 +24,9 @@ class User extends BaseEntity {
 
     @OneToMany(type => Unit, unit => unit.resident)
     public units: Unit[];
+
+    @OneToMany(type => ExpenseType, expenseTypes => expenseTypes.owner)
+    public expenseTypes: ExpenseType[];
 
     hashPassword() {
         this.password = bcrypt.hashSync(this.password, 8);

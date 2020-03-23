@@ -19,7 +19,8 @@
       "@users": ["users/index"],
       "@apartments": ["apartments/index"],
       "@units": ["units/index"],
-      "@apartmentExpenses": ["apartmentExpenses/index"]
+      "@apartmentExpenses": ["apartmentExpenses/index"],
+      "@expenseTypes": ["expenseTypes/index"]
     }
   },
   "include": [

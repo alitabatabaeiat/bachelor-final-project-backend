@@ -1,6 +1,7 @@
 import {Column, Entity, ManyToOne} from "typeorm";
 import {BaseEntity} from "@utils";
 import {Apartment} from "@apartments";
+import ExpenseType from "../expenseTypes/expenseTypes.entity";
 
 @Entity('apartment_expenses')
 class ApartmentExpense extends BaseEntity {
@@ -18,6 +19,9 @@ class ApartmentExpense extends BaseEntity {
 
     @ManyToOne(type => Apartment, apartment => apartment.expenses)
     public apartment: Apartment;
+
+    @ManyToOne(type => ExpenseType, type => type.expenses)
+    public type: ExpenseType;
 }
 
 export default ApartmentExpense;
