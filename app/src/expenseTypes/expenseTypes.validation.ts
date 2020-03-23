@@ -12,7 +12,12 @@ const createExpenseTypeSchema = Joi.object({
 const getAllExpenseTypesSchema = Joi.object({
 });
 
+const getExpenseTypeSchema = Joi.object({
+    id: Rules.id.required()
+});
+
 export {
     createExpenseTypeSchema,
-    getAllExpenseTypesSchema
+    getAllExpenseTypesSchema,
+    getExpenseTypeSchema
 }

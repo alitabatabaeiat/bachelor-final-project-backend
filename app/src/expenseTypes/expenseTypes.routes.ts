@@ -6,5 +6,6 @@ const router = Router();
 
 router.post('/', asyncWrapper(controller.createExpenseType));
 router.get('/', asyncWrapper(controller.getAllExpenseTypes));
+router.get('/:id', asyncWrapper(controller.getExpenseType));
 
 export default router;
