@@ -2,7 +2,8 @@ import {getCustomRepository} from 'typeorm';
 import _ from 'lodash';
 import ExpenseType from './expenseTypes.entity';
 import {
-    createExpenseTypeSchema
+    createExpenseTypeSchema,
+    getAllExpenseTypesSchema
 } from './expenseTypes.validation';
 import {validate, catchExceptions} from '@utils';
 import ExpenseTypeRepository from './expenseTypes.repository';
@@ -20,8 +21,24 @@ const createExpenseType = async (user: User, data: ObjectLiteral): Promise<Expen
     }
 };
 
+const getAllExpenseTypes = async (user: User, data: ObjectLiteral): Promise<ExpenseType[]> | never => {
+    try {
+        const validData = validate(getAllExpenseTypesSchema, data);
+        const repository = getCustomRepository(ExpenseTypeRepository);
+        const expenseTypes = await repository.find({
+            where: {
+                owner: user.id
+            }
+        });
+        return expenseTypes;
+    } catch (ex) {
+        catchExceptions(ex);
+    }
+};
+
 const service = {
-    createExpenseType
+    createExpenseType,
+    getAllExpenseTypes
 };
 
 export default service;

@@ -9,6 +9,10 @@ const createExpenseTypeSchema = Joi.object({
     color: Joi.string().hex().length(6).required()
 });
 
+const getAllExpenseTypesSchema = Joi.object({
+});
+
 export {
-    createExpenseTypeSchema
+    createExpenseTypeSchema,
+    getAllExpenseTypesSchema
 }
