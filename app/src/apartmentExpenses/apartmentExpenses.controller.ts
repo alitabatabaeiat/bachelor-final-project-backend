@@ -18,7 +18,14 @@ const getAllApartmentExpenses = async (req: Request, res: express.Response, next
     res.jsend.success(apartmentExpenses);
 };
 
+const getOptions = async (req: Request, res: express.Response, next: express.NextFunction) => {
+    const { user, body, params } = req;
+    const options = Service.getOptions(user, body);
+    res.jsend.success(options);
+};
+
 export default {
     createApartmentExpense,
-    getAllApartmentExpenses
+    getAllApartmentExpenses,
+    getOptions
 }

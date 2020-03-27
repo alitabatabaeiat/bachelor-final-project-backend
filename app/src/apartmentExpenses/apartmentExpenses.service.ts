@@ -49,9 +49,17 @@ const getAllApartmentExpenses = async (user: User, data: ObjectLiteral): Promise
     }
 };
 
+const getOptions = (user: User, data: ObjectLiteral): ObjectLiteral => {
+    return {
+        splitOptions: Object.values(SplitOption),
+        filterOptions: Object.values(FilterOption)
+    };
+};
+
 const service = {
     createApartmentExpense,
-    getAllApartmentExpenses
+    getAllApartmentExpenses,
+    getOptions
 };
 
 export default service;
