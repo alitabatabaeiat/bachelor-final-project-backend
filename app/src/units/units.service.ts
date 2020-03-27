@@ -15,6 +15,7 @@ import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions'
 import UnitRepository from './units.repository';
 import {ObjectLiteral, User} from "@interfaces";
 import {UserService} from '@users';
+import {ApartmentService} from '@apartments';
 
 const createUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | never => {
     try {
@@ -29,6 +30,7 @@ const createUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | neve
                 });
             validData.resident = resident.id;
         }
+        await ApartmentService.getApartment(user, {id: validData.apartment});
         const unit = repository.create(_.assign(validData));
         await repository.insert(unit);
         return _.pick(unit, ['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount',
