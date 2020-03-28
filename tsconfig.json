@@ -20,7 +20,8 @@
       "@apartments": ["apartments/index"],
       "@units": ["units/index"],
       "@apartmentExpenses": ["apartmentExpenses/index"],
-      "@expenseTypes": ["expenseTypes/index"]
+      "@expenseTypes": ["expenseTypes/index"],
+      "@unitExpenses": ["unitExpenses/index"]
     }
   },
   "include": [

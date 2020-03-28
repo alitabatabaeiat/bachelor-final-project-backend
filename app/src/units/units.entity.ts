@@ -1,7 +1,8 @@
-import {Column, Entity, JoinColumn, ManyToOne} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
 import {BaseEntity} from "@utils";
 import {User} from "@users";
 import Apartment from "../apartments/apartments.entity";
+import {UnitExpense} from "@unitExpenses";
 
 @Entity('units')
 class Unit extends BaseEntity {
@@ -33,6 +34,9 @@ class Unit extends BaseEntity {
     @ManyToOne(type => User, user => user.units)
     @JoinColumn({name: 'resident_id'})
     public resident: User;
+
+    @OneToMany(type => UnitExpense, unitExpense => unitExpense.unit)
+    public expenses: UnitExpense;
 }
 
 export default Unit;
