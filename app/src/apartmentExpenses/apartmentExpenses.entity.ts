@@ -17,6 +17,9 @@ class ApartmentExpense extends BaseEntity {
     @Column({name: 'filter_option', type: 'smallint'})
     public filterOption: string;
 
+    @Column({name: 'is_declared', default: false})
+    public isDeclared: boolean;
+
     @ManyToOne(type => Apartment, apartment => apartment.expenses)
     public apartment: Apartment;
 
