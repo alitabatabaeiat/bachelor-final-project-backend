@@ -1,20 +1,30 @@
-const filterOption = {
-    1: {
-        id: 1,
+enum FilterOptionEnum {
+    all = 1,
+    occupiedUnits,
+    emptyUnits,
+    chosenUnits
+}
+
+const FilterOption = {
+    [FilterOptionEnum.all]: {
+        id: FilterOptionEnum.all,
         title: 'همه'
     },
-    2: {
-        id: 2,
+    [FilterOptionEnum.occupiedUnits]: {
+        id: FilterOptionEnum.occupiedUnits,
         title: 'واحدهای پر'
     },
-    3: {
-        id: 3,
+    [FilterOptionEnum.emptyUnits]: {
+        id: FilterOptionEnum.emptyUnits,
         title: 'واحدهای خالی'
     },
-    4: {
-        id: 4,
+    [FilterOptionEnum.chosenUnits]: {
+        id: FilterOptionEnum.chosenUnits,
         title: 'واحدهای انتخابی'
     }
 };
 
-export default filterOption;
+export {
+    FilterOption,
+    FilterOptionEnum
+};

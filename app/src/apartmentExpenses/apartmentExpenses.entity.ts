@@ -13,10 +13,10 @@ class ApartmentExpense extends BaseEntity {
     public description: string;
 
     @Column({name: 'split_option', type: 'smallint'})
-    public splitOption: string;
+    public splitOption: number;
 
     @Column({name: 'filter_option', type: 'smallint'})
-    public filterOption: string;
+    public filterOption: number;
 
     @Column({name: 'is_declared', default: false})
     public isDeclared: boolean;
@@ -28,7 +28,7 @@ class ApartmentExpense extends BaseEntity {
     public type: ExpenseType;
 
     @ManyToOne(type => UnitExpense, unitExpense => unitExpense.apartmentExpense)
-    public unitExpenses: UnitExpense;
+    public unitExpenses: UnitExpense[];
 }
 
 export default ApartmentExpense;

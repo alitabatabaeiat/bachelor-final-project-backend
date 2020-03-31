@@ -1,28 +1,42 @@
-const splitOption = {
-    1: {
-        id: 1,
+enum SplitOptionEnum {
+    equal = 1,
+    residentCount,
+    parkingSpaceCount,
+    area,
+    floor,
+    specificCoefficients
+}
+
+
+const SplitOption = {
+    [SplitOptionEnum.equal]: {
+        id: SplitOptionEnum.equal,
         title: 'مساوی'
     },
-    2: {
-        id: 2,
+    [SplitOptionEnum.residentCount]: {
+        id: SplitOptionEnum.residentCount,
         title: 'تعداد ساکنین'
     },
-    3: {
-        id: 3,
+    [SplitOptionEnum.parkingSpaceCount]: {
+        id: SplitOptionEnum.parkingSpaceCount,
         title: 'تعداد پارکینگ‌ ها'
     },
-    4: {
-        id: 4,
+    [SplitOptionEnum.area]: {
+        id: SplitOptionEnum.area,
         title: 'مساحت'
     },
-    5: {
-        id: 5,
+    [SplitOptionEnum.floor]: {
+        id: SplitOptionEnum.floor,
         title: 'طبقه'
     },
-    6: {
-        id: 6,
+    [SplitOptionEnum.specificCoefficients]: {
+        id: SplitOptionEnum.specificCoefficients,
         title: 'ضرایب مشخص'
     }
 };
 
-export default splitOption;
+export {
+    SplitOption,
+    SplitOptionEnum
+};
+
