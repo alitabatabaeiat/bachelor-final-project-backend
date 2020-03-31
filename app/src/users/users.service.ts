@@ -3,18 +3,17 @@ import _ from 'lodash';
 import {createUserSchema, createTempUserSchema, getUserSchema} from './users.validation';
 import {validate, catchExceptions} from '@utils';
 import {ConflictException, ResourceNotFoundException} from '@exceptions';
-import UserRepository from './users.repository';
+import getUserRepository from './users.repository';
 import {ObjectLiteral} from "@interfaces";
 import User from "./users.entity";
 
 const createUser = async (data: ObjectLiteral, temp: boolean = false): Promise<User> | never => {
     try {
         const validData = validate(temp ? createTempUserSchema : createUserSchema, data);
-        const repository = getCustomRepository(UserRepository);
-        const user = repository.create(validData);
+        const user = getUserRepository().create(validData);
         if (!temp)
             user.hashPassword();
-        await repository.insert(user);
+        await getUserRepository().insert(user);
         return _.pick(user, ['id', 'firstName', 'lastName', 'mobileNumber']) as User;
     } catch (ex) {
         catchExceptions(ex, () => {
@@ -27,8 +26,7 @@ const createUser = async (data: ObjectLiteral, temp: boolean = false): Promise<U
 const getUser = async (data: ObjectLiteral): Promise<User> | never => {
     try {
         const validData = validate(getUserSchema, data);
-        const repository = getCustomRepository(UserRepository);
-        const user = await repository.findOne(validData, {
+        const user = await getUserRepository().findOne(validData, {
             select: ['id', 'firstName', 'lastName', 'mobileNumber']
         });
         if (!user)

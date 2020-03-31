@@ -10,16 +10,15 @@ import {
 } from './apartments.validation';
 import {validate, catchExceptions} from '@utils';
 import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions';
-import ApartmentRepository from './apartments.repository';
+import getApartmentRepository from './apartments.repository';
 import {ObjectLiteral, User} from "@interfaces";
 import {UnitService} from '@units'
 
 const createApartment = async (user: User, data: ObjectLiteral): Promise<Apartment> | never => {
     try {
         const validData = validate(createApartmentSchema, data);
-        const repository = getCustomRepository(ApartmentRepository);
-        const apartment = repository.create(_.assign(validData, {manager: user}));
-        await repository.insert(apartment);
+        const apartment = getApartmentRepository().create(_.assign(validData, {manager: user}));
+        await getApartmentRepository().insert(apartment);
         return _.pick(apartment, ['id', 'title', 'city', 'address']) as Apartment;
     } catch (ex) {
         catchExceptions(ex);
@@ -29,8 +28,7 @@ const createApartment = async (user: User, data: ObjectLiteral): Promise<Apartme
 const getAllApartments = async (user: User, data: ObjectLiteral): Promise<Apartment[]> | never => {
     try {
         const validData = validate(getAllApartmentsSchema, data);
-        const repository = getCustomRepository(ApartmentRepository);
-        const apartments = await repository.find({
+        const apartments = await getApartmentRepository().find({
             where: {
                 manager: user.id
             }
@@ -44,8 +42,7 @@ const getAllApartments = async (user: User, data: ObjectLiteral): Promise<Apartm
 const getApartment = async (user: User, data: ObjectLiteral): Promise<Apartment> | never => {
     try {
         const validData = validate(getApartmentSchema, data);
-        const repository = getCustomRepository(ApartmentRepository);
-        const apartment = await repository.findOne({
+        const apartment = await getApartmentRepository().findOne({
             where: {
                 id: validData.id,
                 manager: user.id
@@ -63,8 +60,7 @@ const getApartment = async (user: User, data: ObjectLiteral): Promise<Apartment>
 const updateApartment = async (user: User, data: ObjectLiteral): Promise<void> | never => {
     try {
         const validData = validate(updateApartmentSchema, data);
-        const repository = getCustomRepository(ApartmentRepository);
-        const apartment = await repository.findOne({
+        const apartment = await getApartmentRepository().findOne({
             where: {
                 id: validData.id,
                 manager: user.id
@@ -73,7 +69,7 @@ const updateApartment = async (user: User, data: ObjectLiteral): Promise<void> |
         });
         if (!apartment)
             throw new ResourceNotFoundException('Apartment not found');
-        await repository.update(apartment.id, validData);
+        await getApartmentRepository().update(apartment.id, validData);
     } catch (ex) {
         catchExceptions(ex);
     }
@@ -82,8 +78,7 @@ const updateApartment = async (user: User, data: ObjectLiteral): Promise<void> |
 const deleteApartment = async (user: User, data: ObjectLiteral): Promise<void> | never => {
     try {
         const validData = validate(deleteApartmentSchema, data);
-        const repository = getCustomRepository(ApartmentRepository);
-        const apartment = await repository.findOne({
+        const apartment = await getApartmentRepository().findOne({
             where: {
                 id: validData.id,
                 manager: user.id
@@ -97,7 +92,7 @@ const deleteApartment = async (user: User, data: ObjectLiteral): Promise<void> |
                 await UnitService.deleteUnit(user, {id: unit})
             ));
         }
-        await repository.delete(apartment.id);
+        await getApartmentRepository().delete(apartment.id);
     } catch (ex) {
         catchExceptions(ex, () => {
             if (ex instanceof PermissionDeniedException)

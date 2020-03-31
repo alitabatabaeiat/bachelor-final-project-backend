@@ -1,8 +1,10 @@
-import {EntityRepository, Repository} from "typeorm";
+import {EntityRepository, getCustomRepository, Repository} from "typeorm";
 import Unit from "./units.entity";
 
 @EntityRepository(Unit)
 class UnitRepository extends Repository<Unit> {
 }
 
-export default UnitRepository;
+const getUnitRepository = () => getCustomRepository(UnitRepository);
+
+export default getUnitRepository;

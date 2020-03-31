@@ -10,6 +10,13 @@ import { ormConfig } from '@configs';
 import { winston } from '@utils';
 import { errorMiddleware, notFoundMiddleware } from '@middleware';
 import jsend from 'jsend';
+import {
+    initializeTransactionalContext,
+    patchTypeORMRepositoryWithBaseRepository
+} from "typeorm-transactional-cls-hooked";
+
+initializeTransactionalContext();
+patchTypeORMRepositoryWithBaseRepository();
 
 const app = express();
 app.use(morgan('combined', {stream: winston.mStream}));

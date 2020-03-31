@@ -1,8 +1,10 @@
-import { EntityRepository, Repository } from "typeorm";
+import {EntityRepository, getCustomRepository, Repository} from "typeorm";
 import User from "./users.entity";
 
 @EntityRepository(User)
 class UserRepository extends Repository<User> {
 }
 
-export default UserRepository;
+const getUserRepository = () => getCustomRepository(UserRepository);
+
+export default getUserRepository;

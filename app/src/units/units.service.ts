@@ -1,4 +1,3 @@
-import {getCustomRepository} from 'typeorm';
 import _ from 'lodash';
 import Unit from './units.entity';
 import {
@@ -12,7 +11,7 @@ import {
 } from './units.validation';
 import {validate, catchExceptions} from '@utils';
 import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions';
-import UnitRepository from './units.repository';
+import getUnitRepository from './units.repository';
 import {ObjectLiteral, User} from "@interfaces";
 import {UserService} from '@users';
 import {ApartmentService} from '@apartments';
@@ -20,7 +19,6 @@ import {ApartmentService} from '@apartments';
 const createUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | never => {
     try {
         let validData = validate(createUnitSchema, data);
-        const repository = getCustomRepository(UnitRepository);
         if (validData.resident) {
             const userData = {mobileNumber: validData.resident};
             const resident = await UserService.getUser(userData)
@@ -31,8 +29,8 @@ const createUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | neve
             validData.resident = resident.id;
         }
         await ApartmentService.getApartment(user, {id: validData.apartment});
-        const unit = repository.create(_.assign(validData));
-        await repository.insert(unit);
+        const unit = getUnitRepository().create(_.assign(validData));
+        await getUnitRepository().insert(unit);
         return _.pick(unit, ['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount',
             'fixedCharge', 'isEmpty']) as Unit;
     } catch (ex) {
@@ -43,8 +41,7 @@ const createUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | neve
 const getResidentUnits = async (user: User, data: ObjectLiteral): Promise<Unit[]> | never => {
     try {
         const validData = validate(getResidentUnitsSchema, data);
-        const repository = getCustomRepository(UnitRepository);
-        const units = await repository.createQueryBuilder('unit')
+        const units = await getUnitRepository().createQueryBuilder('unit')
             .select(['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'isEmpty'].map(s => `unit.${s}`))
             .addSelect(['id', 'title', 'city', 'address'].map(s => `apt.${s}`))
             .leftJoin('unit.apartment', 'apt')
@@ -60,8 +57,7 @@ const getResidentUnits = async (user: User, data: ObjectLiteral): Promise<Unit[]
 const getApartmentUnits = async (user: User, data: ObjectLiteral): Promise<Unit[]> | never => {
     try {
         const validData = validate(getApartmentUnitsSchema, data);
-        const repository = getCustomRepository(UnitRepository);
-        const units = await repository.createQueryBuilder('unit')
+        const units = await getUnitRepository().createQueryBuilder('unit')
             .select(['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'isEmpty'].map(s => `unit.${s}`))
             .addSelect(['firstName', 'lastName', 'mobileNumber'].map(s => `resident.${s}`))
             .leftJoin('unit.apartment', 'apt', 'apt.manager = :manager')
@@ -78,8 +74,7 @@ const getApartmentUnits = async (user: User, data: ObjectLiteral): Promise<Unit[
 const getUnitAsResident = async (user: User, data: ObjectLiteral): Promise<Unit> | never => {
     try {
         const validData = validate(getUnitAsResidentSchema, data);
-        const repository = getCustomRepository(UnitRepository);
-        const unit = await repository.findOne({
+        const unit = await getUnitRepository().findOne({
             where: {
                 id: validData.id,
                 resident: user.id
@@ -97,8 +92,7 @@ const getUnitAsResident = async (user: User, data: ObjectLiteral): Promise<Unit>
 const getUnitAsManager = async (user: User, data: ObjectLiteral): Promise<Unit> | never => {
     try {
         const validData = validate(getUnitAsManagerSchema, data);
-        const repository = getCustomRepository(UnitRepository);
-        const unit = await repository.createQueryBuilder('unit')
+        const unit = await getUnitRepository().createQueryBuilder('unit')
             .select(['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'isEmpty'].map(s => `unit.${s}`))
             .addSelect(['firstName', 'lastName', 'mobileNumber'].map(s => `resident.${s}`))
             .leftJoin('unit.apartment', 'apt', 'apt.manager = :manager')
@@ -117,8 +111,7 @@ const getUnitAsManager = async (user: User, data: ObjectLiteral): Promise<Unit> 
 const updateUnit = async (user: User, data: ObjectLiteral): Promise<void> | never => {
     try {
         const validData = validate(updateUnitSchema, data);
-        const repository = getCustomRepository(UnitRepository);
-        const unit = await repository.createQueryBuilder('unit')
+        const unit = await getUnitRepository().createQueryBuilder('unit')
             .select(['unit.id', 'resident.id'])
             .leftJoin('unit.apartment', 'apt', 'apt.manager = :manager')
             .leftJoin('unit.resident', 'resident')
@@ -139,7 +132,7 @@ const updateUnit = async (user: User, data: ObjectLiteral): Promise<void> | neve
                 });
             validData.resident = resident.id;
         }
-        await repository.update(unit.id, validData);
+        await getUnitRepository().update(unit.id, validData);
     } catch (ex) {
         catchExceptions(ex);
     }
@@ -148,8 +141,7 @@ const updateUnit = async (user: User, data: ObjectLiteral): Promise<void> | neve
 const deleteUnit = async (user: User, data: ObjectLiteral, skipManagerChecking: boolean = false): Promise<void> | never => {
     try {
         const validData = validate(deleteUnitSchema, data);
-        const repository = getCustomRepository(UnitRepository);
-        const query = repository.createQueryBuilder('unit')
+        const query = getUnitRepository().createQueryBuilder('unit')
             .select(['unit.id', 'resident.id'])
             .leftJoin('unit.resident', 'resident')
             .where('unit.id = :id')
@@ -162,7 +154,7 @@ const deleteUnit = async (user: User, data: ObjectLiteral, skipManagerChecking: 
             throw new ResourceNotFoundException('Unit not found');
         if (unit.resident)
             throw new PermissionDeniedException("You don't have permission to delete unit with resident");
-        await repository.delete(unit.id);
+        await getUnitRepository().delete(unit.id);
     } catch (ex) {
         catchExceptions(ex);
     }

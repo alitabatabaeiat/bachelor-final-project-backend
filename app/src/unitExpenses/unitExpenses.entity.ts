@@ -3,7 +3,7 @@ import {BaseEntity} from "@utils";
 import {Unit} from "@units";
 import {ApartmentExpense} from "@apartmentExpenses";
 
-@Entity('apartment_expenses')
+@Entity('unit_expenses')
 class UnitExpense extends BaseEntity {
     @Column({type: 'bigint'})
     public amount: number;

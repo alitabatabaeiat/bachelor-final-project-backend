@@ -85,7 +85,7 @@ const messages = {
     'string.pattern.name': '{{#label}} مقدار "{[.]}" با الگوی {{#name}} مطابق نیست',
 };
 
-const validate = (schema: Schema, data: ObjectLiteral): ObjectLiteral | never => {
+const validate = (schema: Schema, data: any): ObjectLiteral | never => {
     const {error, value} = schema.validate(data, {
         abortEarly: false,
         stripUnknown: true,
