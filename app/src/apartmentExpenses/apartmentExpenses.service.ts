@@ -11,6 +11,7 @@ import {ExpenseTypeService} from "@expenseTypes";
 import {SplitOption, FilterOption, FilterOptionEnum, SplitOptionEnum} from '@constants';
 import {UnitExpenseService} from "@unitExpenses";
 import getApartmentExpenseRepository from "./apartmentExpenses.repository";
+import Response from "./apartmentExpenses.response";
 import ValidationException from "../exceptions/validation.exception";
 import {Unit, UnitService} from "@units";
 import {Transactional} from "typeorm-transactional-cls-hooked";
@@ -20,8 +21,9 @@ class ApartmentExpenseService {
     @Transactional()
     async createApartmentExpense(user: User, data: ObjectLiteral): Promise<ApartmentExpense> | never {
         try {
+            console.log(data);
             const validData = validate(createApartmentExpenseSchema, data);
-            await ExpenseTypeService.getExpenseType(user, {id: validData.type});
+            const type = await ExpenseTypeService.getExpenseType(user, {id: validData.type});
             let units = await UnitService.getApartmentUnits(user, {apartment: validData.apartment});
             units = this.filterUnits(units, validData);
             let apartmentExpense = getApartmentExpenseRepository().create(validData);
@@ -33,7 +35,7 @@ class ApartmentExpenseService {
                 splitOption: SplitOption[apartmentExpense.splitOption],
                 filterOption: FilterOption[apartmentExpense.filterOption]
             });
-            return _.pick(apartmentExpense, ['id', 'amount', 'description', 'filterOption', 'splitOption', 'unitExpenses']) as ApartmentExpense;
+            return Response.createApartmentExpense(apartmentExpense, type);
         } catch (ex) {
             catchExceptions(ex);
         }
@@ -45,42 +47,42 @@ class ApartmentExpenseService {
                 return units.map(u => ({
                     unit: u.id,
                     apartmentExpense: apartmentExpense.id,
-                    amount: apartmentExpense.amount / units.length
+                    amount: Math.round(apartmentExpense.amount / units.length)
                 }));
             case SplitOptionEnum.residentCount:
                 const residentSum = units.reduce((total, current) => total + current.residentCount, 0);
                 return units.map(u => ({
                     unit: u.id,
                     apartmentExpense: apartmentExpense.id,
-                    amount: apartmentExpense.amount / residentSum * u.residentCount
+                    amount: Math.round(apartmentExpense.amount / residentSum * u.residentCount)
                 }));
             case SplitOptionEnum.parkingSpaceCount:
                 const parkingSpaceSum = units.reduce((total, current) => total + current.parkingSpaceCount, 0);
                 return units.map(u => ({
                     unit: u.id,
                     apartmentExpense: apartmentExpense.id,
-                    amount: apartmentExpense.amount / parkingSpaceSum * u.parkingSpaceCount
+                    amount: Math.round(apartmentExpense.amount / parkingSpaceSum * u.parkingSpaceCount)
                 }));
             case SplitOptionEnum.area:
                 const areaSum = units.reduce((total, current) => total + current.area, 0);
                 return units.map(u => ({
                     unit: u.id,
                     apartmentExpense: apartmentExpense.id,
-                    amount: apartmentExpense.amount / areaSum * u.area
+                    amount: Math.round(apartmentExpense.amount / areaSum * u.area)
                 }));
             case SplitOptionEnum.floor:
                 const floorSum = units.reduce((total, current) => total + current.floor, 0);
                 return units.map(u => ({
                     unit: u.id,
                     apartmentExpense: apartmentExpense.id,
-                    amount: apartmentExpense.amount / floorSum * u.floor
+                    amount: Math.round(apartmentExpense.amount / floorSum * u.floor)
                 }));
             case SplitOptionEnum.specificCoefficients:
                 const coefficientSum = data.coefficients.reduce((total, current) => total + current, 0);
                 return data.units.map((unitId, i) => ({
                     unit: unitId,
                     apartmentExpense: apartmentExpense.id,
-                    amount: apartmentExpense.amount / coefficientSum * data.coefficients[i]
+                    amount: Math.round(apartmentExpense.amount / coefficientSum * data.coefficients[i])
                 }));
         }
     }
@@ -112,9 +114,16 @@ class ApartmentExpenseService {
     async getAllApartmentExpenses(user: User, data: ObjectLiteral): Promise<ApartmentExpense[]> | never {
         try {
             const validData = validate(getAllApartmentExpensesSchema, data);
+            const whereClause: ObjectLiteral = {
+                apartment: validData.apartment
+            };
+            if (validData.declared !== undefined)
+                whereClause.isDeclared = validData.declared;
             let apartmentExpenses = await getApartmentExpenseRepository().find({
-                where: {
-                    apartment: validData.apartment
+                where: whereClause,
+                relations: ['type'],
+                order: {
+                  createdAt: "DESC"
                 }
             });
             apartmentExpenses = apartmentExpenses.map(expense => _.assign(expense, {

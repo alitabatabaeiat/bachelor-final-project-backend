@@ -1,14 +1,15 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: 'app/src/.env'});
+
+dotenv.config({path: 'app/src/.env'});
 import 'reflect-metadata';
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
-import { createConnection } from 'typeorm';
+import {createConnection} from 'typeorm';
 import routes from './routes';
-import { ormConfig } from '@configs';
-import { winston } from '@utils';
-import { errorMiddleware, notFoundMiddleware } from '@middleware';
+import {ormConfig} from '@configs';
+import {winston} from '@utils';
+import {errorMiddleware, notFoundMiddleware} from '@middleware';
 import jsend from 'jsend';
 import {
     initializeTransactionalContext,

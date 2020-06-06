@@ -4,7 +4,7 @@ class BaseEntity {
     @PrimaryGeneratedColumn()
     public id: number;
 
-    @CreateDateColumn({name: 'created_at', select: false})
+    @CreateDateColumn({name: 'created_at'})
     public createdAt: Date;
 
     @UpdateDateColumn({name: 'updated_at', select: false})

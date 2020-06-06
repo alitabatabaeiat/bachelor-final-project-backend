@@ -7,6 +7,7 @@ import {
 } from './expenseTypes.validation';
 import {validate, catchExceptions} from '@utils';
 import getExpenseTypeRepository from './expenseTypes.repository';
+import Response from './expenseTypes.response';
 import {ObjectLiteral, User} from "@interfaces";
 import ResourceNotFoundException from "../exceptions/resourceNotFound.execption";
 
@@ -15,7 +16,7 @@ const createExpenseType = async (user: User, data: ObjectLiteral): Promise<Expen
         const validData = validate(createExpenseTypeSchema, data);
         const expenseType = getExpenseTypeRepository().create(_.assign(validData, {owner: user}));
         await getExpenseTypeRepository().insert(expenseType);
-        return _.pick(expenseType, ['id', 'title', 'color']) as ExpenseType;
+        return Response.createExpenseType(expenseType);
     } catch (ex) {
         catchExceptions(ex);
     }
@@ -27,6 +28,9 @@ const getAllExpenseTypes = async (user: User, data: ObjectLiteral): Promise<Expe
         const expenseTypes = await getExpenseTypeRepository().find({
             where: {
                 owner: user.id
+            },
+            order: {
+                createdAt: "DESC"
             }
         });
         return expenseTypes;

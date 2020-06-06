@@ -20,7 +20,8 @@ const getResidentUnitsSchema = Joi.object({
 });
 
 const getApartmentUnitsSchema = Joi.object({
-    apartment: Rules.id.required()
+    apartment: Rules.id.required(),
+    isEmpty: Joi.boolean()
 });
 
 const getUnitAsResidentSchema = Joi.object({

@@ -12,6 +12,7 @@ import {
 import {validate, catchExceptions} from '@utils';
 import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions';
 import getUnitRepository from './units.repository';
+import Response from './units.response';
 import {ObjectLiteral, User} from "@interfaces";
 import {UserService} from '@users';
 import {ApartmentService} from '@apartments';
@@ -19,9 +20,10 @@ import {ApartmentService} from '@apartments';
 const createUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | never => {
     try {
         let validData = validate(createUnitSchema, data);
+        let resident = null;
         if (validData.resident) {
             const userData = {mobileNumber: validData.resident};
-            const resident = await UserService.getUser(userData)
+            resident = await UserService.getUser(userData)
                 .catch(async ex => {
                     if (ex instanceof ResourceNotFoundException)
                         return await UserService.createUser(userData, true);
@@ -31,8 +33,7 @@ const createUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | neve
         await ApartmentService.getApartment(user, {id: validData.apartment});
         const unit = getUnitRepository().create(_.assign(validData));
         await getUnitRepository().insert(unit);
-        return _.pick(unit, ['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount',
-            'fixedCharge', 'isEmpty']) as Unit;
+        return Response.createUnit(unit, resident);
     } catch (ex) {
         catchExceptions(ex);
     }
@@ -57,15 +58,17 @@ const getResidentUnits = async (user: User, data: ObjectLiteral): Promise<Unit[]
 const getApartmentUnits = async (user: User, data: ObjectLiteral): Promise<Unit[]> | never => {
     try {
         const validData = validate(getApartmentUnitsSchema, data);
-        const units = await getUnitRepository().createQueryBuilder('unit')
+        const unitsQurey = getUnitRepository().createQueryBuilder('unit')
             .select(['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'isEmpty'].map(s => `unit.${s}`))
             .addSelect(['firstName', 'lastName', 'mobileNumber'].map(s => `resident.${s}`))
             .leftJoin('unit.apartment', 'apt', 'apt.manager = :manager')
             .leftJoin('unit.resident', 'resident')
             .where('unit.apartment = :apartment')
-            .setParameters({manager: user.id, apartment: validData.apartment})
-            .getMany();
-        return units;
+            .setParameters({manager: user.id, apartment: validData.apartment});
+        if (data.isEmpty !== undefined)
+            unitsQurey.andWhere('unit.isEmpty = :isEmpty')
+                .setParameter('isEmpty', validData.isEmpty);
+        return await unitsQurey.getMany();
     } catch (ex) {
         catchExceptions(ex);
     }
@@ -108,11 +111,12 @@ const getUnitAsManager = async (user: User, data: ObjectLiteral): Promise<Unit> 
     }
 };
 
-const updateUnit = async (user: User, data: ObjectLiteral): Promise<void> | never => {
+const updateUnit = async (user: User, data: ObjectLiteral): Promise<Unit> | never => {
     try {
         const validData = validate(updateUnitSchema, data);
         const unit = await getUnitRepository().createQueryBuilder('unit')
-            .select(['unit.id', 'resident.id'])
+            .select(['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'isEmpty'].map(s => `unit.${s}`))
+            .addSelect(['id','firstName', 'lastName', 'mobileNumber'].map(s => `resident.${s}`))
             .leftJoin('unit.apartment', 'apt', 'apt.manager = :manager')
             .leftJoin('unit.resident', 'resident')
             .where('unit.id = :id')
@@ -123,22 +127,27 @@ const updateUnit = async (user: User, data: ObjectLiteral): Promise<void> | neve
             .getOne();
         if (!unit)
             throw new ResourceNotFoundException('Unit not found');
+
+        let resident = unit.resident;
         if (validData.resident) {
             const userData = {mobileNumber: validData.resident};
-            const resident = await UserService.getUser(userData)
+            resident = await UserService.getUser(userData)
                 .catch(async ex => {
                     if (ex instanceof ResourceNotFoundException)
                         return await UserService.createUser(userData, true);
                 });
             validData.resident = resident.id;
         }
+        resident = validData.resident === null ? null : resident;
         await getUnitRepository().update(unit.id, validData);
+        console.log(unit.resident);
+        return Response.createUnit(_.assign(unit, validData), resident);
     } catch (ex) {
         catchExceptions(ex);
     }
 };
 
-const deleteUnit = async (user: User, data: ObjectLiteral, skipManagerChecking: boolean = false): Promise<void> | never => {
+const deleteUnit = async (user: User, data: ObjectLiteral, skipManagerChecking: boolean = false): Promise<Unit> | never => {
     try {
         const validData = validate(deleteUnitSchema, data);
         const query = getUnitRepository().createQueryBuilder('unit')
@@ -155,6 +164,7 @@ const deleteUnit = async (user: User, data: ObjectLiteral, skipManagerChecking: 
         if (unit.resident)
             throw new PermissionDeniedException("You don't have permission to delete unit with resident");
         await getUnitRepository().delete(unit.id);
+        return Response.createUnit(unit);
     } catch (ex) {
         catchExceptions(ex);
     }

@@ -7,7 +7,7 @@ import _ from "lodash";
 const createExpenseType = async (req: Request, res: express.Response, next: express.NextFunction) => {
     const { user, body } = req;
     const expenseType = await service.createExpenseType(user, body);
-    res.status(201).jsend.success(Message.successfullyCreated);
+    res.status(201).jsend.success(expenseType);
 };
 
 const getAllExpenseTypes = async (req: Request, res: express.Response, next: express.NextFunction) => {

@@ -11,8 +11,11 @@ const createApartmentExpense = async (req: Request, res: express.Response, next:
 };
 
 const getAllApartmentExpenses = async (req: Request, res: express.Response, next: express.NextFunction) => {
-    const { user, body, params } = req;
-    const extendedBody = _.assign(body, {apartment: params.apartmentId});
+    const { user, body, params, query } = req;
+    const extendedBody = _.assign(body, {
+        apartment: params.apartmentId,
+        declared: query.declared
+    });
     const apartmentExpenses = await Service.getAllApartmentExpenses(user, extendedBody);
     res.jsend.success(apartmentExpenses);
 };

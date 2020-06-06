@@ -26,7 +26,8 @@ const createApartmentExpenseSchema = Joi.object({
     });
 
 const getAllApartmentExpensesSchema = Joi.object({
-    apartment: Rules.id.required()
+    apartment: Rules.id.required(),
+    declared: Joi.boolean()
 });
 
 export {

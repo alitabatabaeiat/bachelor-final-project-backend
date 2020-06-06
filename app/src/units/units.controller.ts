@@ -9,12 +9,12 @@ const createUnit = async (req: Request, res: express.Response, next: express.Nex
     if (_.includes(baseUrl, Role.resident))
         return next();
     const unit = await service.createUnit(user, body);
-    res.status(201).jsend.success('Unit created successfully');
+    res.status(201).jsend.success(unit);
 };
 
 const getAllUnits = async (req: Request, res: express.Response) => {
     const {baseUrl, user, body, query} = req;
-    const extendedBody = _.assign(body, {apartment: query.apartment});
+    const extendedBody = _.assign(body, {apartment: query.apartment, isEmpty: query.isEmpty});
     let units = [];
     if (_.includes(baseUrl, Role.resident))
         units = await service.getResidentUnits(user, extendedBody);
@@ -39,8 +39,8 @@ const updateUnit = async (req: Request, res: express.Response, next: express.Nex
     if (_.includes(baseUrl, Role.resident))
         return next();
     const extendedBody = _.assign(body, {id: params.id});
-    await service.updateUnit(user, extendedBody);
-    res.jsend.success('Unit updated successfully');
+    const unit = await service.updateUnit(user, extendedBody);
+    res.jsend.success(unit);
 };
 
 const deleteUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
@@ -48,8 +48,8 @@ const deleteUnit = async (req: Request, res: express.Response, next: express.Nex
     if (_.includes(baseUrl, Role.resident))
         return next();
     const extendedBody = _.assign(body, {id: params.id});
-    await service.deleteUnit(user, extendedBody);
-    res.jsend.success('Unit deleted successfully');
+    const unit = await service.deleteUnit(user, extendedBody);
+    res.jsend.success(unit);
 };
 
 export default {
