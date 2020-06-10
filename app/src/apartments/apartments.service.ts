@@ -1,4 +1,3 @@
-import {getCustomRepository} from 'typeorm';
 import _ from 'lodash';
 import Apartment from './apartments.entity';
 import {
@@ -39,15 +38,16 @@ const getAllApartments = async (user: User, data: ObjectLiteral): Promise<Apartm
     }
 };
 
-const getApartment = async (user: User, data: ObjectLiteral): Promise<Apartment> | never => {
+const getApartment = async (user: User, data: ObjectLiteral, loadUnits: boolean = false): Promise<Apartment> | never => {
     try {
         const validData = validate(getApartmentSchema, data);
+        const relations = loadUnits ? ['manager', 'units'] : ['manager'];
         const apartment = await getApartmentRepository().findOne({
             where: {
                 id: validData.id,
                 manager: user.id
             },
-            relations: ['manager']
+            relations
         });
         if (!apartment)
             throw new ResourceNotFoundException('Apartment not found');

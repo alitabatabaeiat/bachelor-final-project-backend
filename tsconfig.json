@@ -21,7 +21,9 @@
       "@units": ["units/index"],
       "@apartmentExpenses": ["apartmentExpenses/index"],
       "@expenseTypes": ["expenseTypes/index"],
-      "@unitExpenses": ["unitExpenses/index"]
+      "@unitExpenses": ["unitExpenses/index"],
+      "@charges": ["charges/index"],
+      "@unitCharges": ["unitCharges/index"]
     }
   },
   "include": [

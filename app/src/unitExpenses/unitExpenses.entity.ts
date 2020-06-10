@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToOne} from "typeorm";
+import {Column, Entity, ManyToOne, RelationId} from "typeorm";
 import {BaseEntity} from "@utils";
 import {Unit} from "@units";
 import {ApartmentExpense} from "@apartmentExpenses";
@@ -10,6 +10,9 @@ class UnitExpense extends BaseEntity {
 
     @ManyToOne(type => Unit, unit => unit.expenses)
     public unit: Unit;
+
+    @RelationId((unitExpense: UnitExpense) => unitExpense.unit)
+    unitId: number;
 
     @ManyToOne(type => ApartmentExpense, apartmentExpense => apartmentExpense.unitExpenses)
     public apartmentExpense: ApartmentExpense;

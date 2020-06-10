@@ -2,8 +2,6 @@ import _ from 'lodash';
 import UnitExpense from './unitExpenses.entity';
 import {
     createUnitExpenseSchema
-
-
 } from './unitExpenses.validation';
 import {validate, catchExceptions} from '@utils';
 import getUnitExpenseRepository from './unitExpenses.repository';

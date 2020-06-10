@@ -3,6 +3,7 @@ import {BaseEntity} from "@utils";
 import {User} from "@users";
 import Apartment from "../apartments/apartments.entity";
 import {UnitExpense} from "@unitExpenses";
+import {UnitCharge} from "@unitCharges";
 
 @Entity('units')
 class Unit extends BaseEntity {
@@ -36,7 +37,10 @@ class Unit extends BaseEntity {
     public resident: User;
 
     @OneToMany(type => UnitExpense, unitExpense => unitExpense.unit)
-    public expenses: UnitExpense;
+    public expenses: UnitExpense[];
+
+    @OneToMany(type => UnitCharge, unitCharge => unitCharge.unit)
+    public charges: UnitCharge[];
 }
 
 export default Unit;

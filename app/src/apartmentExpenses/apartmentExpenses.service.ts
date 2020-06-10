@@ -123,7 +123,7 @@ class ApartmentExpenseService {
                 where: whereClause,
                 relations: ['type'],
                 order: {
-                  createdAt: "DESC"
+                    createdAt: "DESC"
                 }
             });
             apartmentExpenses = apartmentExpenses.map(expense => _.assign(expense, {
