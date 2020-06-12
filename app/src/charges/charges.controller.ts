@@ -5,9 +5,10 @@ import _ from "lodash";
 import {Role} from "@constants";
 
 export const createCharge = async (req: Request, res: express.Response, next: express.NextFunction) => {
-    const {baseUrl, user, body} = req;
+    const {baseUrl, user, body, params} = req;
     if (_.includes(baseUrl, Role.resident))
         return next();
-    const charge = await service.createCharge(user, body);
+    const extendedBody = _.assign(body, {apartment: params.apartmentId});
+    const charge = await service.createCharge(user, extendedBody);
     res.status(201).jsend.success(charge);
 };

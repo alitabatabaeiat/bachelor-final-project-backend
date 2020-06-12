@@ -28,22 +28,25 @@ class ChargeService {
                 ['title', 'paymentDeadline', 'delayPenalty', 'includeFixedCharge', 'apartment'])
             );
             await getChargeRepository().insert(charge);
-            await getApartmentExpenseRepository().update(apartmentExpenses.map(aptExp => aptExp.id),
-                {isDeclared: true, charge}
+            if (apartmentExpenses.length > 0)
+                await getApartmentExpenseRepository().update(apartmentExpenses.map(aptExp => aptExp.id),
+                    {isDeclared: true, charge}
                 );
             const unitCharges: any[] = units.map(unit => {
-                let chargeAmount = unitExpenses[unit.id].reduce((pVal, cVal) => pVal + cVal.amount, 0);
+                let chargeAmount = 0;
+                if (unitExpenses[unit.id])
+                    chargeAmount += unitExpenses[unit.id].reduce((pVal, cVal) => pVal + cVal.amount, 0);
                 chargeAmount += (validData.includeFixedCharge ? unit.fixedCharge : 0);
                 return {
                     amount: chargeAmount,
-                    unit: unit.id,
+                    unit,
                     charge: charge.id
                 };
             });
             await getUnitChargeRepository().insert(unitCharges);
             return _.assign(charge, {
                 unitCharges,
-                expenses: apartmentExpenses.map(aptExp => _.omit(aptExp, ['unitExpenses', 'isDeclared']))
+                expenses: apartmentExpenses.map(aptExp => _.omit(aptExp, ['unitExpenses', 'isDeclared'])),
             });
         } catch (ex) {
             catchExceptions(ex);
