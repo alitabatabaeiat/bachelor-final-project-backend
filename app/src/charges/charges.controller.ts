@@ -12,3 +12,12 @@ export const createCharge = async (req: Request, res: express.Response, next: ex
     const charge = await service.createCharge(user, extendedBody);
     res.status(201).jsend.success(charge);
 };
+
+export const getAllCharges = async (req: Request, res: express.Response, next: express.NextFunction) => {
+    const {baseUrl, user, params} = req;
+    if (_.includes(baseUrl, Role.resident))
+        return next();
+    const body = _.assign({}, {apartment: params.apartmentId});
+    const charges = await service.getAllCharges(user, body);
+    res.jsend.success(charges);
+};

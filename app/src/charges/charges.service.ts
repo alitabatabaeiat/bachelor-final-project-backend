@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Charge from './charges.entity';
 import {
-    createChargeSchema
+    createChargeSchema, getAllChargesSchema
 } from './charges.validation';
 import {validate, catchExceptions} from '@utils';
 import getChargeRepository from './charges.repository';
@@ -52,6 +52,17 @@ class ChargeService {
             catchExceptions(ex);
         }
     };
+
+    async getAllCharges(user: User, data: ObjectLiteral): Promise<Charge[]> | never {
+        try {
+            const validData = validate(getAllChargesSchema, data);
+            await ApartmentService.getApartment(user, {id: validData.apartment});
+            const charges = await getChargeRepository().find({apartment: validData.apartment});
+            return charges;
+        } catch (e) {
+            catchExceptions(e);
+        }
+    }
 }
 
 export default new ChargeService();
