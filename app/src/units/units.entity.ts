@@ -25,6 +25,12 @@ class Unit extends BaseEntity {
     @Column({name: 'fixed_charge', type: 'bigint', default: 0})
     public fixedCharge: number;
 
+    @Column({name: 'power_consumption', type: 'bigint', default: 0})
+    public powerConsumption: number;
+
+    @Column({name: 'suggested_consumption_coefficient', type: 'float', nullable: true})
+    public suggestedConsumptionCoefficient: number;
+
     @Column({name: 'is_empty'})
     public isEmpty: boolean;
 

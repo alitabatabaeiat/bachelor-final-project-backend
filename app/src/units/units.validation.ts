@@ -11,6 +11,8 @@ const createUnitSchema = Joi.object({
     parkingSpaceCount: Joi.number().integer().min(0).required(),
     residentCount: Joi.number().integer().min(0).required(),
     fixedCharge: Joi.number().integer().min(0),
+    powerConsumption: Joi.number().integer().min(1),
+    suggestedConsumptionCoefficient: Joi.number(),
     isEmpty: Joi.boolean().required(),
     apartment: Rules.id.required(),
     resident: Rules.mobileNumber
@@ -40,6 +42,8 @@ const updateUnitSchema = Joi.object({
     parkingSpaceCount: Joi.number().integer().min(0),
     residentCount: Joi.number().integer().min(0),
     fixedCharge: Joi.number().integer().min(0),
+    powerConsumption: Joi.number().integer().min(1),
+    suggestedConsumptionCoefficient: Joi.number(),
     isEmpty: Joi.boolean(),
     resident: Rules.mobileNumber.allow(null)
 });

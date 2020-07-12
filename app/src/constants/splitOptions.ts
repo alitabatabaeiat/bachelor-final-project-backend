@@ -4,7 +4,8 @@ enum SplitOptionEnum {
     parkingSpaceCount,
     area,
     floor,
-    specificCoefficients
+    specificCoefficients,
+    consumptionCoefficient
 }
 
 
@@ -32,6 +33,10 @@ const SplitOption = {
     [SplitOptionEnum.specificCoefficients]: {
         id: SplitOptionEnum.specificCoefficients,
         title: 'ضرایب مشخص'
+    },
+    [SplitOptionEnum.consumptionCoefficient]: {
+        id: SplitOptionEnum.consumptionCoefficient,
+        title: 'ضریب مصرف'
     }
 };
 

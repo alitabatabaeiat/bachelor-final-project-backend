@@ -21,7 +21,6 @@ class ApartmentExpenseService {
     @Transactional()
     async createApartmentExpense(user: User, data: ObjectLiteral): Promise<ApartmentExpense> | never {
         try {
-            console.log(data);
             const validData = validate(createApartmentExpenseSchema, data);
             const type = await ExpenseTypeService.getExpenseType(user, {id: validData.type});
             let units = await UnitService.getApartmentUnits(user, {apartment: validData.apartment});
@@ -83,6 +82,14 @@ class ApartmentExpenseService {
                     unit: unitId,
                     apartmentExpense: apartmentExpense.id,
                     amount: Math.round(apartmentExpense.amount / coefficientSum * data.coefficients[i])
+                }));
+            case SplitOptionEnum.consumptionCoefficient:
+                const minPowerConsumption = _.minBy(units,
+                    unit => unit.powerConsumption === 0 ? Number.MAX_SAFE_INTEGER : unit.powerConsumption).powerConsumption;
+                return units.map((u, i) => ({
+                    unit: u.id,
+                    apartmentExpense: apartmentExpense.id,
+                    amount: Math.round(apartmentExpense.amount / minPowerConsumption * u.powerConsumption)
                 }));
         }
     }
