@@ -2,6 +2,7 @@ import {getCustomRepository} from 'typeorm';
 import _ from 'lodash';
 import ApartmentExpense from './apartmentExpenses.entity';
 import {
+    calculateApartmentExpenseSchema,
     createApartmentExpenseSchema,
     getAllApartmentExpensesSchema
 } from './apartmentExpenses.validation';
@@ -47,11 +48,10 @@ class ApartmentExpenseService {
 
     async getCalculatedExpenses(user: User, data: ObjectLiteral): Promise<UnitExpense[]> | never {
         try {
-            const validData = validate(createApartmentExpenseSchema, data);
+            const validData = validate(calculateApartmentExpenseSchema, data);
             let units = await UnitService.getApartmentUnits(user, {apartment: validData.apartment});
             let apartmentExpense = getApartmentExpenseRepository().create(validData);
             const unitExpensesData = this.createUnitExpensesData(units, apartmentExpense, validData);
-            console.log(units);
             return _.map(unitExpensesData, (value, key) => {
                 const unit: any = _.find(units, ['id', parseInt(key)]);
                 unit.amount = value;
@@ -153,7 +153,7 @@ class ApartmentExpenseService {
                 break;
         }
         return _.assign({}, ..._.chain(filteredUnits).map((u: any) => ({
-            [u.id]: Math.round(apartmentExpense.amount * u.share / total)
+            [u.id]: Math.ceil(apartmentExpense.amount * u.share / total)
         })).value());
     }
 
