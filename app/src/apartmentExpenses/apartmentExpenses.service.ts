@@ -15,6 +15,7 @@ import Response from "./apartmentExpenses.response";
 import ValidationException from "../exceptions/validation.exception";
 import {Unit, UnitService} from "@units";
 import {Transactional} from "typeorm-transactional-cls-hooked";
+import UnitExpense from "../unitExpenses/unitExpenses.entity";
 
 class ApartmentExpenseService {
 
@@ -24,12 +25,16 @@ class ApartmentExpenseService {
             const validData = validate(createApartmentExpenseSchema, data);
             const type = await ExpenseTypeService.getExpenseType(user, {id: validData.type});
             let units = await UnitService.getApartmentUnits(user, {apartment: validData.apartment});
-            units = this.filterUnits(units, validData);
             let apartmentExpense = getApartmentExpenseRepository().create(validData);
             await getApartmentExpenseRepository().insert(apartmentExpense);
             const unitExpensesData = this.createUnitExpensesData(units, apartmentExpense, validData);
-            apartmentExpense.unitExpenses = await Promise.all(unitExpensesData.map(async uData =>
-                await UnitExpenseService.createUnitExpense(user, uData)));
+            apartmentExpense.unitExpenses = await Promise.all(_.map(unitExpensesData, async (value, key) =>
+                await UnitExpenseService.createUnitExpense(user, {
+                    unit: key,
+                    apartmentExpense: apartmentExpense.id,
+                    amount: value
+                })
+            ));
             apartmentExpense = _.assign(apartmentExpense, {
                 splitOption: SplitOption[apartmentExpense.splitOption],
                 filterOption: FilterOption[apartmentExpense.filterOption]
@@ -40,81 +45,21 @@ class ApartmentExpenseService {
         }
     }
 
-    private createUnitExpensesData(units: Unit[], apartmentExpense: ApartmentExpense, data: ObjectLiteral): ObjectLiteral[] {
-        switch (apartmentExpense.splitOption) {
-            case SplitOptionEnum.equal:
-                return units.map(u => ({
-                    unit: u.id,
-                    apartmentExpense: apartmentExpense.id,
-                    amount: Math.round(apartmentExpense.amount / units.length)
-                }));
-            case SplitOptionEnum.residentCount:
-                const residentSum = units.reduce((total, current) => total + current.residentCount, 0);
-                return units.map(u => ({
-                    unit: u.id,
-                    apartmentExpense: apartmentExpense.id,
-                    amount: Math.round(apartmentExpense.amount / residentSum * u.residentCount)
-                }));
-            case SplitOptionEnum.parkingSpaceCount:
-                const parkingSpaceSum = units.reduce((total, current) => total + current.parkingSpaceCount, 0);
-                return units.map(u => ({
-                    unit: u.id,
-                    apartmentExpense: apartmentExpense.id,
-                    amount: Math.round(apartmentExpense.amount / parkingSpaceSum * u.parkingSpaceCount)
-                }));
-            case SplitOptionEnum.area:
-                const areaSum = units.reduce((total, current) => total + current.area, 0);
-                return units.map(u => ({
-                    unit: u.id,
-                    apartmentExpense: apartmentExpense.id,
-                    amount: Math.round(apartmentExpense.amount / areaSum * u.area)
-                }));
-            case SplitOptionEnum.floor:
-                const floorSum = units.reduce((total, current) => total + current.floor, 0);
-                return units.map(u => ({
-                    unit: u.id,
-                    apartmentExpense: apartmentExpense.id,
-                    amount: Math.round(apartmentExpense.amount / floorSum * u.floor)
-                }));
-            case SplitOptionEnum.specificCoefficients:
-                const coefficientSum = data.coefficients.reduce((total, current) => total + current, 0);
-                return data.units.map((unitId, i) => ({
-                    unit: unitId,
-                    apartmentExpense: apartmentExpense.id,
-                    amount: Math.round(apartmentExpense.amount / coefficientSum * data.coefficients[i])
-                }));
-            case SplitOptionEnum.consumptionCoefficient:
-                const minPowerConsumption = _.minBy(units,
-                    unit => unit.powerConsumption === 0 ? Number.MAX_SAFE_INTEGER : unit.powerConsumption).powerConsumption;
-                return units.map((u, i) => ({
-                    unit: u.id,
-                    apartmentExpense: apartmentExpense.id,
-                    amount: Math.round(apartmentExpense.amount / minPowerConsumption * u.powerConsumption)
-                }));
+    async getCalculatedExpenses(user: User, data: ObjectLiteral): Promise<UnitExpense[]> | never {
+        try {
+            const validData = validate(createApartmentExpenseSchema, data);
+            let units = await UnitService.getApartmentUnits(user, {apartment: validData.apartment});
+            let apartmentExpense = getApartmentExpenseRepository().create(validData);
+            const unitExpensesData = this.createUnitExpensesData(units, apartmentExpense, validData);
+            console.log(units);
+            return _.map(unitExpensesData, (value, key) => {
+                const unit: any = _.find(units, ['id', parseInt(key)]);
+                unit.amount = value;
+                return unit;
+            }) as UnitExpense[];
+        } catch (ex) {
+            catchExceptions(ex);
         }
-    }
-
-    private filterUnits(units: Unit[], data: ObjectLiteral): Unit[] {
-        let filteredUnits = [];
-        switch (data.filterOption) {
-            case FilterOptionEnum.all:
-                filteredUnits = units;
-                break;
-            case FilterOptionEnum.occupiedUnits:
-                filteredUnits = units.filter(u => !u.isEmpty);
-                break;
-            case FilterOptionEnum.emptyUnits:
-                filteredUnits = units.filter(u => u.isEmpty);
-                break;
-            case FilterOptionEnum.chosenUnits:
-                if (data.units.some(u => !units.map(({id}) => id).includes(u)))
-                    throw new ValidationException('حداقل یکی از واحدها در این آپارتمان نیست');
-                return units.filter(u => data.units.includes(u.id));
-        }
-        if (data.splitOption === SplitOptionEnum.specificCoefficients &&
-            data.units.some(u => !units.map(({id}) => id).includes(u)))
-            throw new ValidationException('حداقل یکی از واحدها در این آپارتمان نیست');
-        return filteredUnits;
     }
 
 
@@ -149,6 +94,91 @@ class ApartmentExpenseService {
             filterOptions: Object.values(FilterOption)
         };
     };
+
+    private createUnitExpensesData(units: Unit[], apartmentExpense: ApartmentExpense, data: ObjectLiteral): ObjectLiteral {
+        let filteredUnits = this.filterUnits(units, data);
+        let total = 0;
+        switch (apartmentExpense.splitOption) {
+            case SplitOptionEnum.equal:
+                total = filteredUnits.length;
+                filteredUnits.forEach((u: any) => u.share = 1);
+                break;
+            case SplitOptionEnum.residentCount:
+                total = _.sumBy(filteredUnits, (u: any) => {
+                    u.share = u.residentCount;
+                    return u.share;
+                });
+                break;
+            case SplitOptionEnum.parkingSpaceCount:
+                total = _.sumBy(filteredUnits, (u: any) => {
+                    u.share = u.parkingSpaceCount;
+                    return u.share;
+                });
+                break;
+            case SplitOptionEnum.area:
+                total = _.sumBy(filteredUnits, (u: any) => {
+                    u.share = u.area;
+                    return u.share;
+                });
+                break;
+            case SplitOptionEnum.floor:
+                total = _.sumBy(filteredUnits, (u: any) => {
+                    u.share = u.floor;
+                    return u.share;
+                });
+                break;
+            case SplitOptionEnum.specificCoefficients:
+                total = _.sum(data.coefficients);
+                filteredUnits = data.units.map((unitId, i) => {
+                    const unit: any = _.find(filteredUnits, ['id', unitId]);
+                    console.log(unit);
+                    unit.share = data.coefficients[i];
+                    return unit;
+                });
+                break;
+            case SplitOptionEnum.consumptionCoefficient:
+                const minPowerConsumption = _.minBy(units,
+                    u => u.powerConsumption === 0 ? Number.MAX_SAFE_INTEGER : u.powerConsumption).powerConsumption;
+                total = _.sumBy(filteredUnits, (u: any) => {
+                    u.share = u.suggestedConsumptionCoefficient > 0 ?
+                        u.suggestedConsumptionCoefficient : u.powerConsumption / minPowerConsumption;
+                    return u.share;
+                });
+                break;
+            case SplitOptionEnum.residentCountAndFloor:
+                total = _.sumBy(filteredUnits, (u: any) => {
+                    u.share = u.residentCount * u.floor;
+                    return u.share;
+                });
+                break;
+        }
+        return _.assign({}, ..._.chain(filteredUnits).map((u: any) => ({
+            [u.id]: Math.round(apartmentExpense.amount * u.share / total)
+        })).value());
+    }
+
+    private filterUnits(units: Unit[], data: ObjectLiteral): Unit[] {
+        let filteredUnits = [];
+        switch (data.filterOption) {
+            case FilterOptionEnum.all:
+                filteredUnits = units;
+                break;
+            case FilterOptionEnum.occupiedUnits:
+                filteredUnits = units.filter(u => !u.isEmpty);
+                break;
+            case FilterOptionEnum.emptyUnits:
+                filteredUnits = units.filter(u => u.isEmpty);
+                break;
+            case FilterOptionEnum.chosenUnits:
+                if (data.units.some(u => !units.map(({id}) => id).includes(u)))
+                    throw new ValidationException('حداقل یکی از واحدها در این آپارتمان نیست');
+                return units.filter(u => data.units.includes(u.id));
+        }
+        if (data.splitOption === SplitOptionEnum.specificCoefficients &&
+            data.units.some(u => !units.map(({id}) => id).includes(u)))
+            throw new ValidationException('حداقل یکی از واحدها در این آپارتمان نیست');
+        return filteredUnits;
+    }
 }
 
 export default new ApartmentExpenseService();

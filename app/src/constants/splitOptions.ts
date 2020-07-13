@@ -5,7 +5,8 @@ enum SplitOptionEnum {
     area,
     floor,
     specificCoefficients,
-    consumptionCoefficient
+    consumptionCoefficient,
+    residentCountAndFloor
 }
 
 
@@ -37,6 +38,10 @@ const SplitOption = {
     [SplitOptionEnum.consumptionCoefficient]: {
         id: SplitOptionEnum.consumptionCoefficient,
         title: 'ضریب مصرف'
+    },
+    [SplitOptionEnum.residentCountAndFloor]: {
+        id: SplitOptionEnum.residentCountAndFloor,
+        title: 'تعداد ساکنین و طبقه'
     }
 };
 
