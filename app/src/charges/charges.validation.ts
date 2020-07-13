@@ -9,6 +9,7 @@ export const createChargeSchema = Joi.object({
     paymentDeadline: Joi.number().integer().positive(),
     delayPenalty: Joi.number().integer().positive(),
     includeFixedCharge: Joi.boolean().required(),
+    description: Rules.persianText,
     expenses: Joi.array().items(Rules.id).default([]),
     apartment: Rules.id.required()
 });

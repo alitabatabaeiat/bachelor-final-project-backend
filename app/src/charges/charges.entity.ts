@@ -18,6 +18,9 @@ class Charge extends BaseEntity {
     @Column({name: 'include_fixed_Charge'})
     public includeFixedCharge: boolean;
 
+    @Column({name: 'description', type: 'text', nullable: true})
+    public description: boolean;
+
     @ManyToOne(type => Apartment, apartment => apartment.charges, {onDelete: 'CASCADE', nullable: false})
     @JoinColumn({name: 'apartment_id'})
     public apartment: Apartment;
