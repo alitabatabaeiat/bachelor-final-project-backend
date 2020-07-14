@@ -3,6 +3,7 @@ import controller from './apartments.controller';
 import {asyncWrapper} from '@utils';
 import {ApartmentExpenseRoutes} from "@apartmentExpenses";
 import {ChargeRoutes} from "@charges";
+import {SettingRoutes} from "../settings";
 
 const router = Router();
 
@@ -14,5 +15,6 @@ router.delete('/:id', asyncWrapper(controller.deleteApartment));
 
 router.use('/:apartmentId/expenses', ApartmentExpenseRoutes);
 router.use('/:apartmentId/charges', ChargeRoutes);
+router.use('/:apartmentId/settings', SettingRoutes);
 
 export default router;
