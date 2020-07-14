@@ -22,11 +22,14 @@ class ChargeService {
                 apartment: validData.apartment,
                 isDeclared: false
             });
+            const totalChargeAmount = _.sumBy(apartmentExpenses, 'amount');
             const unitExpenses: ObjectLiteral = _.groupBy(_.flatten(apartmentExpenses.map(aptExp => aptExp.unitExpenses)), 'unitId');
 
-            const charge = getChargeRepository().create(_.pick(validData,
-                ['title', 'paymentDeadline', 'delayPenalty', 'includeFixedCharge', 'description', 'apartment'])
-            );
+            const charge = getChargeRepository().create({
+                totalAmount: totalChargeAmount,
+                ..._.pick(validData,
+                    ['title', 'paymentDeadline', 'delayPenalty', 'includeFixedCharge', 'description', 'apartment'])
+            });
             await getChargeRepository().insert(charge);
             if (apartmentExpenses.length > 0)
                 await getApartmentExpenseRepository().update(apartmentExpenses.map(aptExp => aptExp.id),

@@ -8,6 +8,9 @@ class UnitCharge extends BaseEntity {
     @Column({name: 'amount', type: 'bigint'})
     public amount: number;
 
+    @Column({name: 'is_paid', default: false})
+    public isPaid: boolean;
+
     @ManyToOne(type => Unit, unit => unit.charges, {onDelete: 'CASCADE', nullable: false})
     @JoinColumn({name: 'unit_id'})
     public unit: Unit;

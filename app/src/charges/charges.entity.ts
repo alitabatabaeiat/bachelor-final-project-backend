@@ -9,8 +9,11 @@ class Charge extends BaseEntity {
     @Column({length: 30})
     public title: string;
 
-    @Column({type: 'smallint', nullable: true})
+    @Column({name: 'payment_deadline', type: 'smallint', nullable: true})
     public paymentDeadline: number;
+
+    @Column({name: 'total_amount', type: 'bigint'})
+    public totalAmount: number;
 
     @Column({name: 'delay_penalty', type: 'bigint', nullable: true})
     public delayPenalty: number;
