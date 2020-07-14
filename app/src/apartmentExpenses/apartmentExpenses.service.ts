@@ -17,6 +17,8 @@ import ValidationException from "../exceptions/validation.exception";
 import {Unit, UnitService} from "@units";
 import {Transactional} from "typeorm-transactional-cls-hooked";
 import UnitExpense from "../unitExpenses/unitExpenses.entity";
+import {getSettingRepository} from "../settings";
+import Setting from "../settings/settings.entity";
 
 class ApartmentExpenseService {
 
@@ -25,10 +27,11 @@ class ApartmentExpenseService {
         try {
             const validData = validate(createApartmentExpenseSchema, data);
             const type = await ExpenseTypeService.getExpenseType(user, {id: validData.type});
+            const setting = await getSettingRepository().findOne({apartment: validData.apartment});
             let units = await UnitService.getApartmentUnits(user, {apartment: validData.apartment});
             let apartmentExpense = getApartmentExpenseRepository().create(validData);
             await getApartmentExpenseRepository().insert(apartmentExpense);
-            const unitExpensesData = this.createUnitExpensesData(units, apartmentExpense, validData);
+            const unitExpensesData = this.createUnitExpensesData(units, apartmentExpense, setting, validData);
             apartmentExpense.unitExpenses = await Promise.all(_.map(unitExpensesData, async (value, key) =>
                 await UnitExpenseService.createUnitExpense(user, {
                     unit: key,
@@ -49,9 +52,10 @@ class ApartmentExpenseService {
     async getCalculatedExpenses(user: User, data: ObjectLiteral): Promise<UnitExpense[]> | never {
         try {
             const validData = validate(calculateApartmentExpenseSchema, data);
+            const setting = await getSettingRepository().findOne({apartment: validData.apartment});
             let units = await UnitService.getApartmentUnits(user, {apartment: validData.apartment});
             let apartmentExpense = getApartmentExpenseRepository().create(validData);
-            const unitExpensesData = this.createUnitExpensesData(units, apartmentExpense, validData);
+            const unitExpensesData = this.createUnitExpensesData(units, apartmentExpense, setting, validData);
             return _.map(unitExpensesData, (value, key) => {
                 const unit: any = _.find(units, ['id', parseInt(key)]);
                 unit.amount = value;
@@ -95,7 +99,7 @@ class ApartmentExpenseService {
         };
     };
 
-    private createUnitExpensesData(units: Unit[], apartmentExpense: ApartmentExpense, data: ObjectLiteral): ObjectLiteral {
+    private createUnitExpensesData(units: Unit[], apartmentExpense: ApartmentExpense, setting: Setting, data: ObjectLiteral): ObjectLiteral {
         let filteredUnits = this.filterUnits(units, data);
         let total = 0;
         switch (apartmentExpense.splitOption) {
@@ -104,26 +108,30 @@ class ApartmentExpenseService {
                 filteredUnits.forEach((u: any) => u.share = 1);
                 break;
             case SplitOptionEnum.residentCount:
+                const minResidentCount = _.minBy(units, 'residentCount').residentCount;
                 total = _.sumBy(filteredUnits, (u: any) => {
-                    u.share = u.residentCount;
+                    u.share = (u.residentCount - minResidentCount) * setting.residentCountStep + 1;
                     return u.share;
                 });
                 break;
             case SplitOptionEnum.parkingSpaceCount:
+                const minParkingSpaceCount = _.minBy(units, 'parkingSpaceCount').parkingSpaceCount;
                 total = _.sumBy(filteredUnits, (u: any) => {
-                    u.share = u.parkingSpaceCount;
+                    u.share = (u.parkingSpaceCount - minParkingSpaceCount) * setting.parkingSpaceCountStep + 1;
                     return u.share;
                 });
                 break;
             case SplitOptionEnum.area:
+                const minArea = _.minBy(units, 'area').area;
                 total = _.sumBy(filteredUnits, (u: any) => {
-                    u.share = u.area;
+                    u.share = (u.area - minArea) * setting.areaStep + 1;
                     return u.share;
                 });
                 break;
             case SplitOptionEnum.floor:
+                const minFloor = _.minBy(units, 'floor').floor;
                 total = _.sumBy(filteredUnits, (u: any) => {
-                    u.share = u.floor;
+                    u.share = (u.floor - minFloor) * setting.floorStep + 1;
                     return u.share;
                 });
                 break;
