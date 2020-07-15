@@ -1,15 +1,37 @@
 import _ from 'lodash';
 import UnitCharge from './unitCharges.entity';
 import {
-    getAllChargesSchema, getChargeSchema
+    getAllChargesSchema, getChargeSchema, payChargeSchema
 } from './unitCharges.validation';
 import {validate, catchExceptions} from '@utils';
 import getUnitChargeRepository from './unitCharges.repository';
 import {ObjectLiteral, User} from "@interfaces";
 import getUnitRepository from "../units/units.repository";
 import {FilterOption, SplitOption} from "@constants";
+import getApartmentRepository from "../apartments/apartments.repository";
 
 class UnitChargeService {
+
+    async payCharge(user: User, data: ObjectLiteral): Promise<UnitCharge> | never {
+        try {
+            const validData = validate(payChargeSchema, data);
+            const charge = await getUnitChargeRepository().createQueryBuilder('uCharge')
+                .leftJoinAndSelect('uCharge.unit', 'unit')
+                .leftJoinAndSelect('unit.apartment', 'apartment')
+                .where('uCharge.id = :id')
+                .setParameter('id', validData.id)
+                .getOne();
+            await getApartmentRepository().findOne(charge.unit.apartment.id);
+
+            if (!charge.isPaid)
+                await getUnitChargeRepository().update(charge.id, {isPaid: true});
+            charge.isPaid = true;
+            return charge;
+        } catch (ex) {
+            console.log(ex)
+           catchExceptions(ex);
+        }
+    }
 
     async getAllCharges(user: User, data: ObjectLiteral): Promise<UnitCharge[]> | never {
         try {
@@ -40,7 +62,6 @@ class UnitChargeService {
     async getCharge(user: User, data: ObjectLiteral): Promise<UnitCharge> | never {
         try {
             const validData = validate(getChargeSchema, data);
-            console.log(validData, data)
             const charge = await getUnitChargeRepository().createQueryBuilder('uCharge')
                 .leftJoinAndSelect('uCharge.unit', 'unit')
                 .leftJoinAndSelect('uCharge.charge', 'charge')

@@ -4,6 +4,10 @@ import {Rules} from "@utils";
 
 const ExtendedJoi = Joi.extend(JoiDate);
 
+export const payChargeSchema = Joi.object({
+    id: Rules.id.required()
+});
+
 export const getAllChargesSchema = Joi.object({
     unit: Rules.id.required()
 });
