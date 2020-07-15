@@ -17,3 +17,8 @@ export const createChargeSchema = Joi.object({
 export const getAllChargesSchema = Joi.object({
     apartment: Rules.id.required()
 });
+
+export const getChargeSchema = Joi.object({
+    apartment: Rules.id.required(),
+    id: Rules.id.required()
+});

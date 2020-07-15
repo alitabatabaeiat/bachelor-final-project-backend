@@ -1,4 +1,4 @@
-import {Column, Entity, JoinColumn, ManyToOne, OneToMany} from "typeorm";
+import {Column, Entity, JoinColumn, ManyToOne, OneToMany, RelationId} from "typeorm";
 import {BaseEntity} from "@utils";
 import {Apartment} from "@apartments";
 import {ApartmentExpense} from "@apartmentExpenses";
@@ -30,6 +30,9 @@ class Charge extends BaseEntity {
 
     @OneToMany(type => ApartmentExpense, apartmentExpense => apartmentExpense.charge)
     public expenses: ApartmentExpense[];
+
+    @RelationId((charge: Charge) => charge.expenses)
+    public expensesId: number[];
 
     @OneToMany(type => UnitCharge, unitCharge => unitCharge.charge)
     public unitCharges: UnitCharge[];

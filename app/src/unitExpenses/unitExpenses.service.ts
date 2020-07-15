@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import UnitExpense from './unitExpenses.entity';
 import {
-    createUnitExpenseSchema
+    createUnitExpenseSchema, getAllExpensesSchema
 } from './unitExpenses.validation';
 import {validate, catchExceptions} from '@utils';
 import getUnitExpenseRepository from './unitExpenses.repository';
@@ -21,6 +21,23 @@ class UnitExpenseService {
             catchExceptions(ex);
         }
     };
+
+    async getAllExpenses(user: User, data: ObjectLiteral): Promise<UnitExpense[]> | never {
+        try {
+            const validData = validate(getAllExpensesSchema, data);
+            let unitExpenses = getUnitExpenseRepository().find({
+                where: {
+                    unit: validData.unit
+                },
+                relations: ['apartmentExpense']
+            });
+            return unitExpenses;
+        } catch (ex) {
+            catchExceptions(ex);
+        }
+    };
+
+
 }
 
 export default new UnitExpenseService();

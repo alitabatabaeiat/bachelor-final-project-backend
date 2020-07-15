@@ -1,7 +1,7 @@
 import _ from 'lodash';
 import Charge from './charges.entity';
 import {
-    createChargeSchema, getAllChargesSchema
+    createChargeSchema, getAllChargesSchema, getChargeSchema
 } from './charges.validation';
 import {validate, catchExceptions} from '@utils';
 import getChargeRepository from './charges.repository';
@@ -9,7 +9,8 @@ import {ObjectLiteral, User} from "@interfaces";
 import {ApartmentService} from '@apartments';
 import {Transactional} from "typeorm-transactional-cls-hooked";
 import {getApartmentExpenseRepository} from "@apartmentExpenses";
-import {getUnitChargeRepository} from "@unitCharges";
+import {getUnitChargeRepository, UnitChargeService} from "@unitCharges";
+import getUnitExpenseRepository from "../unitExpenses/unitExpenses.repository";
 
 class ChargeService {
 
@@ -47,6 +48,12 @@ class ChargeService {
                 };
             });
             await getUnitChargeRepository().insert(unitCharges);
+            // if (apartmentExpenses.length > 0)
+            //     await Promise.all(apartmentExpenses.map(async aptExp => {
+            //         await
+            //         await getUnitExpenseRepository().update({apartmentExpense: aptExp.id},
+            //             {unitCharge: unitCharges.find(c => ap)})
+            //     }));
             return _.assign(charge, {
                 unitCharges,
                 expenses: apartmentExpenses.map(aptExp => _.omit(aptExp, ['unitExpenses', 'isDeclared'])),
@@ -60,8 +67,33 @@ class ChargeService {
         try {
             const validData = validate(getAllChargesSchema, data);
             await ApartmentService.getApartment(user, {id: validData.apartment});
-            const charges = await getChargeRepository().find({apartment: validData.apartment});
+            const charges = await getChargeRepository().find({
+                where: {apartment: validData.apartment},
+                relations: ['unitCharges']
+            });
             return charges;
+        } catch (e) {
+            catchExceptions(e);
+        }
+    }
+
+    async getCharge(user: User, data: ObjectLiteral): Promise<Charge> | never {
+        try {
+            const validData = validate(getChargeSchema, data);
+            await ApartmentService.getApartment(user, {id: validData.apartment});
+            const charge = await getChargeRepository().findOne({
+                where: {
+                    id: validData.id,
+                    apartment: validData.apartment
+                },
+                relations: ['unitCharges']
+            });
+            charge.unitCharges = await Promise.all(charge.unitCharges.map(async uCharge =>
+                await UnitChargeService.getCharge(user, {
+                    id: uCharge.id
+                })
+            ));
+            return charge;
         } catch (e) {
             catchExceptions(e);
         }

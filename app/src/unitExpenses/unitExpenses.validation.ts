@@ -10,6 +10,11 @@ const createUnitExpenseSchema = Joi.object({
     amount: Joi.number().integer().min(0).required()
 });
 
+const getAllExpensesSchema = Joi.object({
+    unit: Rules.id.required()
+});
+
 export {
-    createUnitExpenseSchema
+    createUnitExpenseSchema,
+    getAllExpensesSchema
 }

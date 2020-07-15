@@ -1,4 +1,4 @@
-import {Column, Entity, ManyToOne, OneToMany} from "typeorm";
+import {Column, Entity, ManyToOne, OneToMany, RelationId} from "typeorm";
 import {BaseEntity} from "@utils";
 import {Apartment} from "@apartments";
 import ExpenseType from "../expenseTypes/expenseTypes.entity";
@@ -33,6 +33,9 @@ class ApartmentExpense extends BaseEntity {
 
     @ManyToOne(type => Charge, charge => charge.expenses)
     public charge: Charge;
+
+    @RelationId((aptExp: ApartmentExpense) => aptExp.charge)
+    public chargeId: number;
 }
 
 export default ApartmentExpense;
