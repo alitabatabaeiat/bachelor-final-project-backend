@@ -80,6 +80,9 @@ class ApartmentExpenseService {
                 relations: ['type'],
                 order: {
                     createdAt: "DESC"
+                },
+                loadRelationIds: {
+                    relations: ['charge']
                 }
             });
             apartmentExpenses = apartmentExpenses.map(expense => _.assign(expense, {
