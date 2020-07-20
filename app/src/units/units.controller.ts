@@ -4,7 +4,7 @@ import service from "./units.service";
 import _ from "lodash";
 import {Role} from "@constants";
 
-const createUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
+export const createUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
     const {baseUrl, user, body} = req;
     if (_.includes(baseUrl, Role.resident))
         return next();
@@ -12,7 +12,16 @@ const createUnit = async (req: Request, res: express.Response, next: express.Nex
     res.status(201).jsend.success(unit);
 };
 
-const getAllUnits = async (req: Request, res: express.Response) => {
+export const createMultipleUnits = async (req: Request, res: express.Response, next: express.NextFunction) => {
+    const {baseUrl, user, body, file} = req;
+    if (_.includes(baseUrl, Role.resident))
+        return next();
+    const extendedBody = _.assign(body, {file: file.buffer, fileType: file.originalname.split('.').pop()});
+    const units = await service.createMultipleUnits(user, extendedBody);
+    res.status(201).jsend.success(units);
+};
+
+export const getAllUnits = async (req: Request, res: express.Response) => {
     const {baseUrl, user, body, query} = req;
     const extendedBody = _.assign(body, {apartment: query.apartment, isEmpty: query.isEmpty});
     let units = [];
@@ -23,7 +32,7 @@ const getAllUnits = async (req: Request, res: express.Response) => {
     res.jsend.success(units);
 };
 
-const getUnit = async (req: Request, res: express.Response) => {
+export const getUnit = async (req: Request, res: express.Response) => {
     const {baseUrl, user, body, params} = req;
     const extendedBody = _.assign(body, {id: params.id});
     let unit;
@@ -34,7 +43,7 @@ const getUnit = async (req: Request, res: express.Response) => {
     res.jsend.success(unit);
 };
 
-const updateUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
+export const updateUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
     const {baseUrl, user, body, params} = req;
     if (_.includes(baseUrl, Role.resident))
         return next();
@@ -43,7 +52,7 @@ const updateUnit = async (req: Request, res: express.Response, next: express.Nex
     res.jsend.success(unit);
 };
 
-const deleteUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
+export const deleteUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
     const {baseUrl, user, body, params} = req;
     if (_.includes(baseUrl, Role.resident))
         return next();
@@ -51,11 +60,3 @@ const deleteUnit = async (req: Request, res: express.Response, next: express.Nex
     const unit = await service.deleteUnit(user, extendedBody);
     res.jsend.success(unit);
 };
-
-export default {
-    createUnit,
-    getAllUnits,
-    getUnit,
-    updateUnit,
-    deleteUnit
-}

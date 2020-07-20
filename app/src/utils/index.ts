@@ -3,3 +3,4 @@ export { default as winston } from './winston';
 export { default as validate } from './validate';
 export { asyncWrapper, catchExceptions, renameKey } from './helpers';
 export { default as Rules } from './validationRules';
+export { default as Upload } from './upload';

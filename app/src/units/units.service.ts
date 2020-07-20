@@ -1,24 +1,41 @@
 import _ from 'lodash';
+import XLSX from 'xlsx';
 import Unit from './units.entity';
 import {
+    createMultipleUnitsSchema,
     createUnitSchema,
-    getResidentUnitsSchema,
+    deleteUnitSchema,
     getApartmentUnitsSchema,
-    getUnitAsResidentSchema,
+    getResidentUnitsSchema,
     getUnitAsManagerSchema,
-    updateUnitSchema,
-    deleteUnitSchema
+    getUnitAsResidentSchema,
+    updateUnitSchema
 } from './units.validation';
-import {validate, catchExceptions} from '@utils';
-import {ResourceNotFoundException, PermissionDeniedException} from '@exceptions';
+import {catchExceptions, validate} from '@utils';
+import {PermissionDeniedException, ResourceNotFoundException} from '@exceptions';
 import getUnitRepository from './units.repository';
 import Response from './units.response';
 import {ObjectLiteral, User} from "@interfaces";
 import {UserService} from '@users';
+import {Transactional} from "typeorm-transactional-cls-hooked";
+
+const excel = {
+    title: 'A',
+    floor: 'B',
+    area: 'D',
+    parkingSpaceCount: 'F',
+    residentCount: 'E',
+    fixedCharge: 'C',
+    powerConsumption: 'I',
+    isEmpty: 'H',
+    resident: 'G'
+};
 
 class UnitService {
+    @Transactional()
     async createUnit(user: User, data: ObjectLiteral): Promise<Unit> | never {
         try {
+            console.log(data);
             let validData = validate(createUnitSchema, data);
             let resident = null;
             if (validData.resident) {
@@ -30,10 +47,38 @@ class UnitService {
                     });
                 validData.resident = resident.id;
             }
-            const unit = getUnitRepository().create(_.assign(validData));
+            const unit = getUnitRepository().create(validData);
             await getUnitRepository().insert(unit);
             return Response.createUnit(unit, resident);
         } catch (ex) {
+            console.log(ex);
+            catchExceptions(ex);
+        }
+    };
+
+    @Transactional()
+    async createMultipleUnits(user: User, data: ObjectLiteral): Promise<Unit[]> | never {
+        try {
+            const validData = validate(createMultipleUnitsSchema, data);
+            const workbook = XLSX.read(validData.file, {type:'buffer'});
+            const sheet = workbook.Sheets['Sheet1'];
+            let unitDataList = [], i = 2;
+            while (true) {
+                if (!sheet[`A${i}`])
+                    break;
+                const unit: ObjectLiteral = {
+                    apartment: validData.apartment
+                };
+                _.forEach(excel, (value, key) => {
+                    const cell = sheet[value + i];
+                    unit[key] = cell ? cell.v : undefined
+                });
+                unitDataList.push(unit);
+                i++;
+            }
+            return await Promise.all(unitDataList.map(async unit => this.createUnit(user, unit)));
+        } catch (ex) {
+            console.log(ex);
             catchExceptions(ex);
         }
     };
@@ -66,16 +111,19 @@ class UnitService {
                 .where('unit.apartment = :apartment')
                 .setParameters({manager: user.id, apartment: validData.apartment})
                 .getMany();
-            const minPowerConsumption = _.minBy(units,
+            if (units.length > 0) {
+                const minPowerConsumption = _.minBy(units,
                     unit => unit.powerConsumption === 0 ? Number.MAX_SAFE_INTEGER : unit.powerConsumption).powerConsumption;
-            units = units.map((unit: any) => {
-                unit.consumptionCoefficient = unit.powerConsumption / minPowerConsumption;
-                return unit;
-            });
-            if (validData.isEmpty !== undefined)
-                units = units.filter(unit => unit.isEmpty === validData.isEmpty);
+                units = units.map((unit: any) => {
+                    unit.consumptionCoefficient = unit.powerConsumption / minPowerConsumption;
+                    return unit;
+                });
+                if (validData.isEmpty !== undefined)
+                    units = units.filter(unit => unit.isEmpty === validData.isEmpty);
+            }
             return units;
         } catch (ex) {
+            console.log(ex);
             catchExceptions(ex);
         }
     };

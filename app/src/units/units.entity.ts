@@ -19,7 +19,7 @@ class Unit extends BaseEntity {
     @Column({name: 'parking_space_count', type: 'smallint'})
     public parkingSpaceCount: number;
 
-    @Column({name: 'resident_count', type: 'smallint'})
+    @Column({name: 'resident_count', type: 'smallint', nullable: true})
     public residentCount: number;
 
     @Column({name: 'fixed_charge', type: 'bigint', default: 0})

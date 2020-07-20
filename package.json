@@ -22,6 +22,7 @@
     "lodash": "^4.17.15",
     "moment": "^2.24.0",
     "morgan": "^1.9.1",
+    "multer": "^1.4.2",
     "persian-rex": "^2.3.3",
     "reflect-metadata": "^0.1.13",
     "sqlite3": "^4.1.1",
@@ -29,7 +30,8 @@
     "typeorm": "^0.2.22",
     "typeorm-transactional-cls-hooked": "^0.1.12",
     "typescript": "^3.8.2",
-    "winston": "^3.2.1"
+    "winston": "^3.2.1",
+    "xlsx": "^0.16.4"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.2",
