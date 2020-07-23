@@ -43,6 +43,13 @@ export const getUnit = async (req: Request, res: express.Response) => {
     res.jsend.success(unit);
 };
 
+export const getExcel = async (req: Request, res: express.Response, next: express.NextFunction) => {
+    const {baseUrl} = req;
+    if (_.includes(baseUrl, Role.resident))
+        return next();
+    res.download('app/units.xlsx');
+};
+
 export const updateUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
     const {baseUrl, user, body, params} = req;
     if (_.includes(baseUrl, Role.resident))
