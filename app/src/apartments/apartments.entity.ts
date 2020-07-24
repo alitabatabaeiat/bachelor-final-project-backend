@@ -5,6 +5,7 @@ import {Unit} from "@units";
 import {ApartmentExpense} from "@apartmentExpenses";
 import {Charge} from "@charges";
 import {Setting} from "../settings";
+import {AppNotification} from "../notifications";
 
 @Entity('apartments')
 class Apartment extends BaseEntity {
@@ -30,6 +31,9 @@ class Apartment extends BaseEntity {
 
     @OneToMany(type => Charge, charge => charge.apartment)
     public charges: Charge[];
+
+    @OneToMany(type => AppNotification, notification => notification.apartment)
+    public notifications: AppNotification[];
 
     @OneToOne(type => Setting, setting => setting.apartment)
     public setting: Setting;
