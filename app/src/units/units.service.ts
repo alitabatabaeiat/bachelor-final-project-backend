@@ -170,7 +170,12 @@ class UnitService {
     async getUnitsCount(user: User, data: ObjectLiteral): Promise<number> | never {
         try {
             const validData = validate(getUnitsCountSchema, data);
-            await getApartmentRepository().findOne(validData.apartment);
+            await getApartmentRepository().findOne({
+                where: {
+                    apartment: validData.apartment,
+                    manager: user.id
+                }
+            });
             return await getUnitRepository().count({where: {apartment: validData.apartment}});
         } catch (ex) {
             catchExceptions(ex);

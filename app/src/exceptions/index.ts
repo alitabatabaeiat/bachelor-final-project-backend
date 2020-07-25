@@ -3,3 +3,4 @@ export { default as ResourceNotFoundException } from './resourceNotFound.execpti
 export { default as ValidationException } from './validation.exception';
 export { default as ConflictException } from './conflict.exception';
 export { default as PermissionDeniedException } from './permissionDenied.exception';
+export { default as UnAuthorizedException } from './unAuthorized.execption';
