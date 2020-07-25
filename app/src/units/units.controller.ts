@@ -50,6 +50,15 @@ export const getExcel = async (req: Request, res: express.Response, next: expres
     res.download('app/units.xlsx');
 };
 
+export const getUnitsCount = async (req: Request, res: express.Response, next: express.NextFunction) => {
+    const {baseUrl, user, query} = req;
+    if (_.includes(baseUrl, Role.resident))
+        return next();
+    const extendedBody = _.assign({}, {apartment: query.apartment});
+    const unitsCount = await service.getUnitsCount(user, extendedBody);
+    res.jsend.success(unitsCount)
+};
+
 export const updateUnit = async (req: Request, res: express.Response, next: express.NextFunction) => {
     const {baseUrl, user, body, params} = req;
     if (_.includes(baseUrl, Role.resident))

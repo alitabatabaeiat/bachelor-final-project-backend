@@ -10,6 +10,7 @@ router.post('/', asyncWrapper(controller.createUnit));
 router.post('/excel', Upload.single("file"), asyncWrapper(controller.createMultipleUnits));
 router.get('/', asyncWrapper(controller.getAllUnits));
 router.get('/excel', asyncWrapper(controller.getExcel));
+router.get('/count', asyncWrapper(controller.getUnitsCount));
 router.get('/:id', asyncWrapper(controller.getUnit));
 router.patch('/:id', asyncWrapper(controller.updateUnit));
 router.delete('/:id', asyncWrapper(controller.deleteUnit));

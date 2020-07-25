@@ -29,7 +29,7 @@ class UnitChargeService {
             return charge;
         } catch (ex) {
             console.log(ex)
-           catchExceptions(ex);
+            catchExceptions(ex);
         }
     }
 
@@ -44,6 +44,7 @@ class UnitChargeService {
                 .leftJoinAndSelect('charge.expenses', 'aptExp')
                 .leftJoinAndSelect('aptExp.type', 'aptExpType')
                 .innerJoinAndSelect('aptExp.unitExpenses', 'unitExp', 'unitExp.unit = :unit')
+                .orderBy('uCharge.createdAt', 'DESC')
                 .where('uCharge.unit = :unit')
                 .setParameter('unit', validData.unit)
                 .getMany();
@@ -54,6 +55,32 @@ class UnitChargeService {
                 })
             });
             return charges;
+        } catch (e) {
+            catchExceptions(e);
+        }
+    }
+
+    async getLastCharge(user: User, data: ObjectLiteral): Promise<UnitCharge> | never {
+        try {
+            const validData = validate(getAllChargesSchema, data);
+            await getUnitRepository().findOne({id: validData.unit});
+
+            const charge = await getUnitChargeRepository().createQueryBuilder('uCharge')
+                .leftJoinAndSelect('uCharge.unit', 'unit')
+                .leftJoinAndSelect('uCharge.charge', 'charge')
+                .leftJoinAndSelect('charge.expenses', 'aptExp')
+                .leftJoinAndSelect('aptExp.type', 'aptExpType')
+                .innerJoinAndSelect('aptExp.unitExpenses', 'unitExp', 'unitExp.unit = :unit')
+                .orderBy('uCharge.createdAt', 'DESC')
+                .where('uCharge.unit = :unit')
+                .setParameter('unit', validData.unit)
+                .getOne();
+            if (charge)
+                charge.charge.expenses.forEach(expense => {
+                    expense.splitOption = SplitOption[expense.splitOption];
+                    expense.filterOption = FilterOption[expense.filterOption];
+                });
+            return charge;
         } catch (e) {
             catchExceptions(e);
         }

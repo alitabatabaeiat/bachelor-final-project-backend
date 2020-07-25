@@ -40,6 +40,10 @@ export const getUnitAsManagerSchema = Joi.object({
     id: Rules.id.required()
 });
 
+export const getUnitsCountSchema = Joi.object({
+    apartment: Rules.id.required()
+});
+
 export const updateUnitSchema = Joi.object({
     id: Rules.id.required(),
     title: Rules.persianText.min(3).max(25),

@@ -9,6 +9,7 @@ import {
     getResidentUnitsSchema,
     getUnitAsManagerSchema,
     getUnitAsResidentSchema,
+    getUnitsCountSchema,
     updateUnitSchema
 } from './units.validation';
 import {catchExceptions, validate} from '@utils';
@@ -18,6 +19,7 @@ import Response from './units.response';
 import {ObjectLiteral, User} from "@interfaces";
 import {UserService} from '@users';
 import {Transactional} from "typeorm-transactional-cls-hooked";
+import getApartmentRepository from "../apartments/apartments.repository";
 
 const excel = {
     title: 'A',
@@ -60,7 +62,7 @@ class UnitService {
     async createMultipleUnits(user: User, data: ObjectLiteral): Promise<Unit[]> | never {
         try {
             const validData = validate(createMultipleUnitsSchema, data);
-            const workbook = XLSX.read(validData.file, {type:'buffer'});
+            const workbook = XLSX.read(validData.file, {type: 'buffer'});
             const sheet = workbook.Sheets['Sheet1'];
             let unitDataList = [], i = 2;
             while (true) {
@@ -83,7 +85,7 @@ class UnitService {
         }
     };
 
-    async getResidentUnits (user: User, data: ObjectLiteral): Promise<Unit[]> | never {
+    async getResidentUnits(user: User, data: ObjectLiteral): Promise<Unit[]> | never {
         try {
             const validData = validate(getResidentUnitsSchema, data);
             const units = await getUnitRepository().createQueryBuilder('unit')
@@ -99,7 +101,7 @@ class UnitService {
         }
     };
 
-    async getApartmentUnits (user: User, data: ObjectLiteral): Promise<Unit[]> | never {
+    async getApartmentUnits(user: User, data: ObjectLiteral): Promise<Unit[]> | never {
         try {
             const validData = validate(getApartmentUnitsSchema, data);
             let units = await getUnitRepository().createQueryBuilder('unit')
@@ -128,7 +130,7 @@ class UnitService {
         }
     };
 
-    async getUnitAsResident (user: User, data: ObjectLiteral): Promise<Unit> | never {
+    async getUnitAsResident(user: User, data: ObjectLiteral): Promise<Unit> | never {
         try {
             const validData = validate(getUnitAsResidentSchema, data);
             const unit = await getUnitRepository().findOne({
@@ -146,7 +148,7 @@ class UnitService {
         }
     };
 
-    async getUnitAsManager (user: User, data: ObjectLiteral): Promise<Unit> | never {
+    async getUnitAsManager(user: User, data: ObjectLiteral): Promise<Unit> | never {
         try {
             const validData = validate(getUnitAsManagerSchema, data);
             const unit = await getUnitRepository().createQueryBuilder('unit')
@@ -165,12 +167,22 @@ class UnitService {
         }
     };
 
-    async updateUnit (user: User, data: ObjectLiteral): Promise<Unit> | never {
+    async getUnitsCount(user: User, data: ObjectLiteral): Promise<number> | never {
+        try {
+            const validData = validate(getUnitsCountSchema, data);
+            await getApartmentRepository().findOne(validData.apartment);
+            return await getUnitRepository().count({where: {apartment: validData.apartment}});
+        } catch (ex) {
+            catchExceptions(ex);
+        }
+    }
+
+    async updateUnit(user: User, data: ObjectLiteral): Promise<Unit> | never {
         try {
             const validData = validate(updateUnitSchema, data);
             const unit = await getUnitRepository().createQueryBuilder('unit')
                 .select(['id', 'title', 'floor', 'area', 'parkingSpaceCount', 'residentCount', 'fixedCharge', 'powerConsumption', 'isEmpty'].map(s => `unit.${s}`))
-                .addSelect(['id','firstName', 'lastName', 'mobileNumber'].map(s => `resident.${s}`))
+                .addSelect(['id', 'firstName', 'lastName', 'mobileNumber'].map(s => `resident.${s}`))
                 .leftJoin('unit.apartment', 'apt', 'apt.manager = :manager')
                 .leftJoin('unit.resident', 'resident')
                 .where('unit.id = :id')
@@ -200,7 +212,7 @@ class UnitService {
         }
     };
 
-    async deleteUnit (user: User, data: ObjectLiteral, skipManagerChecking: boolean = false): Promise<Unit> | never {
+    async deleteUnit(user: User, data: ObjectLiteral, skipManagerChecking: boolean = false): Promise<Unit> | never {
         try {
             const validData = validate(deleteUnitSchema, data);
             const query = getUnitRepository().createQueryBuilder('unit')

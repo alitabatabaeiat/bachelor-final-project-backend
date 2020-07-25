@@ -21,3 +21,12 @@ export const getAllCharges = async (req: Request, res: express.Response, next: e
     const charges = await service.getAllCharges(user, body);
     res.jsend.success(charges);
 };
+
+export const getLastCharge = async (req: Request, res: express.Response, next: express.NextFunction) => {
+    const {baseUrl, user, params} = req;
+    if (_.includes(baseUrl, Role.manager))
+        return next();
+    const body = _.assign({}, {unit: params.unitId});
+    const charge = await service.getLastCharge(user, body);
+    res.jsend.success(charge ?? null);
+};
